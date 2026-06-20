@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Commerz Terminal Admin</title>
+<title>Neta Menkul Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 * { margin:0; padding:0; box-sizing:border-box; }
@@ -6058,7 +6058,7 @@ function deleteAccount(id) {
 
 function loadSettingsForm() {
   var _gc7a5e0=document.getElementById('st_balance'); if(_gc7a5e0) _gc7a5e0.value = settings.startBalance || 10000;
-  var _g8619bf=document.getElementById('st_title'); if(_g8619bf) _g8619bf.value = settings.title || 'TradeX Terminal';
+  var _g8619bf=document.getElementById('st_title'); if(_g8619bf) _g8619bf.value = settings.title || 'Neta Menkul Terminal';
   var _g015372=document.getElementById('st_ticker'); if(_g015372) _g015372.checked = settings.ticker !== false;
   var _g6cf2c8=document.getElementById('st_anim'); if(_g6cf2c8) _g6cf2c8.checked = settings.anim !== false;
 }
@@ -6805,7 +6805,7 @@ updateAccount();
   window._mainInitDone = true;
 
 accounts = JSON.parse(localStorage.getItem('tx_accounts') || '[]');
-settings = JSON.parse(localStorage.getItem('tx_settings') || '{"startBalance":10000,"leverage":20,"title":"TradeX Terminal","currency":"USD","ticker":true,"anim":true}');
+settings = JSON.parse(localStorage.getItem('tx_settings') || '{"startBalance":10000,"leverage":20,"title":"Neta Menkul Terminal","currency":"USD","ticker":true,"anim":true}');
 
 payMethods = JSON.parse(localStorage.getItem('tx_paymethods') || 'null');
 if (!payMethods) {
@@ -8231,42 +8231,38 @@ function adminLogin(){
   var pass=(document.getElementById('al_pass')||{}).value||'';
   var errEl=document.getElementById('al_error');
   if(!email||!pass){if(errEl)errEl.style.display='block';return;}
-  if(errEl) errEl.style.display='none';
 
-  var btn = document.getElementById('al_btn');
-  if(btn){ btn.disabled = true; btn.textContent = 'Giriş yapılıyor...'; }
-  function _resetBtn(){ if(btn){ btn.disabled = false; btn.textContent = 'Giriş Yap'; } }
+  // 1) Super admin kontrolü
+  var sa=SUPER_ADMINS.find(function(a){return a.email===email.trim()&&a.password===pass.trim();});
+  if(sa){loginSuccess(sa);return;}
 
-  // ⚠️ GÜVENLİK: Şifre artık client-side karşılaştırılmıyor — staffLogin Cloud
-  // Function'ı server-side (Admin SDK) doğrular, gerçek Firebase Auth + custom
-  // claim ({staff:true}) ile bir custom token döner. Firestore kuralları bu
-  // claim'i kontrol eder; anonim oturumlar staff/broker/backup_users'a erişemez.
-  if(typeof firebase === 'undefined' || !firebase.functions) {
-    console.error('[adminLogin] Firebase Functions SDK yüklü değil');
-    if(errEl){ errEl.textContent='Sistem hatası — Functions SDK eksik'; errEl.style.display='block'; }
-    _resetBtn();
-    return;
+  // 2) Önce localStorage'daki staff listesinden dene (auth gerekmez)
+  function _tryMatch(list){
+    var s=list&&list.find(function(x){return x.email===email.trim()&&x.password===pass.trim()&&x.active;});
+    if(s){loginSuccess(s);return true;}
+    return false;
   }
 
-  var fn = firebase.functions().httpsCallable('staffLogin');
-  fn({ email: email.trim(), password: pass.trim() }).then(function(result){
-    var token   = result.data && result.data.token;
-    var profile = result.data && result.data.profile;
-    if(!token || !profile) throw new Error('Geçersiz sunucu yanıtı');
-    return firebase.auth().signInWithCustomToken(token).then(function(){
-      _resetBtn();
-      loginSuccess(profile);
+  try {
+    var lsList = JSON.parse(localStorage.getItem('tx_staff')||'[]');
+    if(lsList.length && _tryMatch(lsList)) return;
+  } catch(e){}
+
+  // 3) localStorage'da bulunamadı — Firebase'den anonim auth ile dene
+  var _auth = (typeof firebase!=='undefined') ? firebase.auth() : null;
+  function _loadFromFB(){
+    fbLoadStaff(function(list){
+      if(!_tryMatch(list)){if(errEl)errEl.style.display='block';}
     });
-  }).catch(function(e){
-    console.warn('[adminLogin]', e);
-    _resetBtn();
-    if(errEl){
-      errEl.textContent = (e && e.code === 'functions/permission-denied')
-        ? 'E-posta veya şifre hatalı'
-        : 'Giriş başarısız — tekrar deneyin';
-      errEl.style.display = 'block';
-    }
-  });
+  }
+
+  if(_auth && !_auth.currentUser) {
+    _auth.signInAnonymously()
+      .then(function(){ _loadFromFB(); })
+      .catch(function(){ _loadFromFB(); }); // auth başarısız olsa da dene
+  } else {
+    _loadFromFB();
+  }
 }
 
 // ══════════════════════════════════════════════════════════
