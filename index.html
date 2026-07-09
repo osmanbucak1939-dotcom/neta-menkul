@@ -3991,6 +3991,22 @@ function closePosition(id, reason='', closeQty) {
   // ID tip güvencesi: number veya string olabilir (Date.now() veya Firebase'den string gelebilir)
   const idx = positions.findIndex(p=>String(p.id)===String(id));
   if (idx === -1) return;
+  // ⚠️ ÇİFT KAPATMA KİLİDİ: Kullanıcı "Kapat"a hızlıca birden çok kez basınca (ya da
+  // bağlantı gecikmesiyle tık tekrarında), aynı pozisyon transaction tamamlanmadan
+  // 2-3 kez kapatılıp geçmişe 2-3 kez kâr yazılıyordu (aynı id, farklı closeTime).
+  // Bir pozisyonun kapatması başladığında onu kilitle; ikinci çağrı anında reddedilsin.
+  // (Parçalı kapatmada kilit YOK — o kasıtlı olarak tekrar çağrılabilir, kalan lot için.)
+  window._closingPositions = window._closingPositions || {};
+  var _isPartial = (parseFloat(closeQty)||0) > 0 && (parseFloat(closeQty)||0) < (parseFloat(positions[idx].qty)||0) - 1e-9;
+  if(!_isPartial) {
+    if(window._closingPositions[String(id)]) {
+      console.warn('[closePosition] #'+id+' zaten kapatılıyor, tekrar çağrı yoksayıldı');
+      return;
+    }
+    window._closingPositions[String(id)] = true;
+    // Güvenlik valfi: 8sn sonra kilidi kaldır (transaction takılırsa hesap kilitli kalmasın)
+    setTimeout(function(){ if(window._closingPositions) delete window._closingPositions[String(id)]; }, 8000);
+  }
   const pos = positions[idx];
   const p = prices[pos.sym];
   const closePrice = p ? p.price : pos.openPrice;
@@ -4058,8 +4074,16 @@ function closePosition(id, reason='', closeQty) {
         var serverPos = Array.isArray(d.positions) ? d.positions.slice() : [];
         var serverHist = Array.isArray(d.tradeHistory) ? d.tradeHistory.slice() : [];
         var sIdx = serverPos.findIndex(function(p){ return String(p.id)===String(id); });
-        if(sIdx >= 0) serverPos.splice(sIdx, 1);
-        // ⚠️ Çift kayıt koruması: bu kapanış zaten sunucu listesinde varsa tekrar ekleme
+        // ⚠️ KESİN ÇİFT-KAPATMA KORUMASI: Pozisyon sunucuda ARTIK YOKSA, demek ki başka
+        // bir çağrı onu zaten kapatmış (hızlı çift tıklama). Bu durumda tarihe TEKRAR
+        // yazMA, bakiyeyi TEKRAR artırMA — hiçbir şey yapma. Bu, "1 işlem 3 kez kâr
+        // yazıldı" bug'ının kesin çözümü (yerel kilit atlansa bile burası korur).
+        if(sIdx < 0) {
+          console.warn('[closePosition] #'+id+' sunucuda zaten kapatılmış, tekrar yazılmadı');
+          return; // transaction'ı yazmadan bitir
+        }
+        serverPos.splice(sIdx, 1);
+        // Ek güvenlik: birebir aynı kapanış zaten varsa ekleme
         var _alreadyClosed = serverHist.some(function(h){
           return String(h.id)===String(_histEntry.id) && h.closeTime===_histEntry.closeTime;
         });
@@ -4068,9 +4092,15 @@ function closePosition(id, reason='', closeQty) {
         var serverBal = (typeof d.balance === 'number') ? d.balance + pnl : balance;
         tx.set(_refCP, { positions: serverPos, tradeHistory: serverHist, balance: serverBal }, { merge: true });
       });
-    }).catch(function(e){ console.warn('[closePosition] transaction:', e.message); });
+    }).then(function(){
+      if(window._closingPositions) delete window._closingPositions[String(id)];
+    }).catch(function(e){
+      if(window._closingPositions) delete window._closingPositions[String(id)];
+      console.warn('[closePosition] transaction:', e.message);
+    });
   } else if(typeof fbSaveUserData === 'function' && typeof _cu !== 'undefined' && _cu) {
     fbSaveUserData(_cu.id, {balance:balance, positions:positions, tradeHistory:tradeHistory.slice(0,50)});
+    if(window._closingPositions) delete window._closingPositions[String(id)];
   }
   renderPositions();
   renderHistory();
