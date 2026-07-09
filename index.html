@@ -2564,7 +2564,7 @@ var TX_INDEX_SYMS = ['SPX500X','NAS100X','DJ30X','DAX40X','DXY'];
 var TX_BIST_SYMS = ['AEFES','AKBNK','ASELS','BIMAS','EKGYO','ENKAI','EREGL','FROTO','GARAN','GUBRF',
   'ISCTR','KCHOL','KOZAL','KRDMD','MGROS','PETKM','SAHOL','SASA','SISE','TAVHL',
   'TCELL','THYAO','TOASO','TTKOM','TUPRS','VAKBN','YKBNK','PGSUS','ASTOR','DSTKF',
-  'AGHOL','AGROT','AHGAZ','AKCNS','AKSA','AKSEN','ALARK','ALFAS','ALTNY','ANSGR','ARCLK','ARDYZ','AYDEM','BERA','BRSAN','BRYAT','BSOKE','BTCIM','CANTE','CCOLA','CIMSA','CVKMD','CWENE','DOAS','DOHOL','ECILC','EFOR','ENERY','ENJSA','EUPWR','FENER','GENIL','GESAN','HALKB','HEKTS','HROZM','ISGYO','ISMEN','KAYSE','KCAER','KLYN','KOND','KONTR','KOZAA','LMKDC','MAVI','MIATK','MOGAN','OBAMS','ODAS','OTKAR','OYAKC','PEKGY','QUAGR','RALYH','REEDR','SAYAS','SDTTR','SKBNK','SOKM','TABGD','TARKM','TEKFA','TKFEN','TMSN','TRENJ','TSKB','TUKAS','TURSG','ULKER','VESBE','VESTL','YEOTK','ZOREN','MPARK','GWIND','HTTBT','LOGO','PASEU','MAGEN','KUYAS','AKFYE','MIAKT','SARKY'];
+  'AGHOL','AGROT','AHGAZ','AKCNS','AKSA','AKSEN','ALARK','ALFAS','ALTNY','ANSGR','ARCLK','ARDYZ','AYDEM','BERA','BRSAN','BRYAT','BSOKE','BTCIM','CANTE','CCOLA','CIMSA','CVKMD','CWENE','DOAS','DOHOL','ECILC','EFOR','ENERY','ENJSA','EUPWR','FENER','GENIL','GESAN','HALKB','HEKTS','HROZM','ISGYO','ISMEN','KAYSE','KCAER','KLYN','KOND','KONTR','KOZAA','LMKDC','MAVI','MIATK','MOGAN','OBAMS','ODAS','OTKAR','OYAKC','PEKGY','QUAGR','RALYH','REEDR','SAYAS','SDTTR','SKBNK','SOKM','TABGD','TARKM','TEKFA','TKFEN','TMSN','TRENJ','TSKB','TUKAS','TURSG','ULKER','VESBE','VESTL','YEOTK','ZOREN','MPARK','GWIND','HTTBT','LOGO','PASEU','MAGEN','KUYAS','AKFYE','MIAKT','SARKY','TDGYO','TTRAK'];
 function lwLoadIndexKlines(sym, interval, cb) {
   var base = (typeof TX_BRIDGE_URL!=='undefined' ? TX_BRIDGE_URL : '')
                .replace(/^wss:/i,'https:').replace(/^ws:/i,'http:').replace(/\/+$/,'');
@@ -4793,6 +4793,8 @@ var MARKET_GROUPS = [
       {sym:'AKFYE', name:'AKFYE', full:'Akfen Yenilenebilir Enerji', icon:'🇹🇷', spread:0.05, decimals:2},
       {sym:'MIAKT', name:'MIAKT', full:'Mia Teknoloji', icon:'🇹🇷', spread:0.05, decimals:2},
       {sym:'SARKY', name:'SARKY', full:'Sarkuysan', icon:'🇹🇷', spread:0.05, decimals:2},
+      {sym:'TDGYO', name:'TDGYO', full:'Trend GYO', icon:'🇹🇷', spread:0.05, decimals:2},
+      {sym:'TTRAK', name:'TTRAK', full:'Türk Traktör', icon:'🇹🇷', spread:0.05, decimals:2},
       {sym:'AGHOL', name:'AGHOL', full:'Anadolu Grubu Holding', icon:'🇹🇷', spread:0.05, decimals:2},
       {sym:'AGROT', name:'AGROT', full:'Agrotech Teknoloji', icon:'🇹🇷', spread:0.05, decimals:2},
       {sym:'AHGAZ', name:'AHGAZ', full:'Ahlatcı Doğalgaz', icon:'🇹🇷', spread:0.05, decimals:2},
@@ -5598,9 +5600,9 @@ function updateMwRow(sym, price, prev) {
   if(row) {
     row.querySelector('.mw-bid').textContent = bidFmt;
     row.querySelector('.mw-ask').textContent = askFmt;
-    row.classList.remove('mw-flash-g','mw-flash-r');
-    if(!document.hidden) void row.offsetWidth;  // reflow — flash animasyonu (arka plandayken layout maliyetine girme)
-    row.classList.add(up ? 'mw-flash-g' : 'mw-flash-r');
+    // ⚠️ PERFORMANS: Flash animasyonu + `void row.offsetWidth` (zorla senkron reflow)
+    // KALDIRILDI — 179 sembol × sık tick × zorla reflow tarayıcıyı boğuyordu.
+    // Yön rengi (_mwApplyDirColor) zaten aşağıda ayrıca uygulanıyor, korunuyor.
     row.dataset.dir = neutral ? 'n' : (up ? 'u' : 'd');
     _mwApplyDirColor(row, up, neutral);
   }
