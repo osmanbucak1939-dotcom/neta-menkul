@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="tr">
 <head>
+<script>(function(){
+  try {
+    var t = localStorage.getItem('tx_theme');
+    if (t === 'light' || t === 'dark') {
+      document.documentElement.setAttribute('data-theme', t);
+    }
+  } catch(e){}
+})();</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=no">
   <meta name="mobile-web-app-capable" content="yes">
@@ -27,6 +35,16 @@ body { touch-action: manipulation; -webkit-text-size-adjust: 100%; overscroll-be
   --border2:  #3a3a3a;
   --text:     #e2e2e2;
   --muted:    #a0a0a0;
+  --faint:    #888888;
+  --faint2:   #555555;
+  --overlay:  rgba(22,22,22,.95);
+  --overlay2: rgba(15,15,15,.9);
+  --mwbid-bg:     rgba(200,0,0,.6);
+  --mwbid-text:   #ff2222;
+  --mwbid-border: rgba(220,0,0,.9);
+  --mwask-bg:     rgba(41,121,255,.45);
+  --mwask-text:   #82b1ff;
+  --mwask-border: rgba(41,121,255,.9);
   --buy:      #2979ff;
   --buy-dim:  #0d1f3c;
   --sell:     #ef5350;
@@ -35,6 +53,32 @@ body { touch-action: manipulation; -webkit-text-size-adjust: 100%; overscroll-be
   --mono:     'IBM Plex Mono', monospace;
   --sans:     'IBM Plex Sans', sans-serif;
 }
+html[data-theme="light"] {
+  --bg:       #f4f4f4;
+  --panel:    #ffffff;
+  --panel2:   #f0f0f0;
+  --border:   #e0e0e0;
+  --border2:  #cfcfcf;
+  --text:     #1a1a1a;
+  --muted:    #6e6e6e;
+  --faint:    #9a9a9a;
+  --faint2:   #c2c2c2;
+  --overlay:  rgba(255,255,255,.95);
+  --overlay2: rgba(255,255,255,.92);
+  --mwbid-bg:     #fbdede;
+  --mwbid-text:   #c62828;
+  --mwbid-border: #e8a3a3;
+  --mwask-bg:     #dce9ff;
+  --mwask-text:   #14479e;
+  --mwask-border: #a9c8f5;
+  --buy:      #1565d8;
+  --buy-dim:  #e3edfb;
+  --sell:     #d32f2f;
+  --sell-dim: #fbe4e4;
+  --accent:   #b8860b;
+}
+html[data-theme="light"] .kyc-modal,
+html[data-theme="light"] .pw-modal { background: rgba(0,0,0,.4); }
 * { box-sizing:border-box; margin:0; padding:0; }
 html { height:100%; overflow:hidden; }
 body { height:100%; overflow:hidden; background:var(--bg); color:var(--text); font-family:var(--font); font-size:13px; position:fixed; width:100%; }
@@ -42,6 +86,13 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
 
 /* ── USER DROPDOWN ── */
 .tb-user-badge { position:relative; }
+.tb-theme-toggle {
+  display:flex; align-items:center; justify-content:center;
+  width:28px; height:28px; border-radius:4px; cursor:pointer;
+  font-size:14px; color:var(--muted); transition:background .12s;
+  flex-shrink:0;
+}
+.tb-theme-toggle:hover { background:var(--panel2); color:var(--text); }
 .user-dropdown {
   position:absolute; top:calc(100% + 4px); right:0;
   background:var(--panel); border:1px solid var(--border2);
@@ -155,7 +206,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
 
 /* ── TICKER STRIP ── */
 .ticker-strip {
-  background:#1a1a1a; border-bottom:1px solid var(--border);
+  background:var(--panel); border-bottom:1px solid var(--border);
   height:24px; overflow:hidden; flex-shrink:0;
 }
 .ticker-inner { display:flex; gap:32px; animation:ticker 35s linear infinite; white-space:nowrap; width:max-content; height:100%; align-items:center; padding:0 16px; }
@@ -216,7 +267,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
 .bp-section.active { display:block; }
 .orders-table { width:100%; border-collapse:collapse; table-layout:fixed; }
 .orders-table th { font-family:var(--mono); font-size:10px; font-weight:600; color:var(--muted); text-align:left; padding:4px 8px; border-bottom:1px solid var(--border); position:sticky; top:0; background:var(--panel); overflow:hidden; white-space:nowrap; }
-.orders-table td { font-family:var(--mono); font-size:11px; padding:5px 8px; border-bottom:1px solid #2a2a2a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.orders-table td { font-family:var(--mono); font-size:11px; padding:5px 8px; border-bottom:1px solid var(--border); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .orders-table tr:hover td { background:var(--panel2); }
 .orders-table tr:last-child td { border-bottom:none; }
 /* Sabit sütun genişlikleri — K/Z değişse de layout oynamaz */
@@ -338,7 +389,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
 .mgr-content { flex:1; overflow-y:auto; padding:20px; }.mgr-section.active { display:block; }/* MANAGER FORM ELEMENTS */
 .mgr-table { width:100%; border-collapse:collapse; margin-bottom:20px; }
 .mgr-table th { font-family:var(--mono); font-size:10px; color:var(--muted); text-align:left; padding:6px 10px; border-bottom:1px solid var(--border); font-weight:600; }
-.mgr-table td { font-family:var(--mono); font-size:12px; padding:8px 10px; border-bottom:1px solid #2a2a2a; vertical-align:middle; }
+.mgr-table td { font-family:var(--mono); font-size:12px; padding:8px 10px; border-bottom:1px solid var(--border); vertical-align:middle; }
 .mgr-table tr:last-child td { border-bottom:none; }
 .mgr-table tr:hover td { background:rgba(255,255,255,.02); }.mgr-row.cols2 { grid-template-columns:1fr 1fr; }
 .mgr-row.cols3 { grid-template-columns:1fr 1fr 1fr; }
@@ -379,7 +430,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
 /* ── İNDİKATÖR TOOLBAR ── */
 .ind-toolbar {
   display:flex; align-items:center; gap:0;
-  background:#1a1a1a; border-bottom:1px solid var(--border);
+  background:var(--panel); border-bottom:1px solid var(--border);
   height:28px; flex-shrink:0; overflow-x:auto;
 }
 .ind-toolbar::-webkit-scrollbar { height:0; }
@@ -446,7 +497,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
 }
 .wallet-overlay.open { display:flex; }
 .wallet-panel {
-  background:#1a1a1a; border:1px solid var(--border2);
+  background:var(--panel); border:1px solid var(--border2);
   width:480px; max-width:96vw; max-height:90vh;
   border-radius:4px; box-shadow:0 24px 64px rgba(0,0,0,.8);
   display:flex; flex-direction:column; overflow:hidden;
@@ -481,7 +532,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
   background:var(--bg); border:1px solid var(--border); border-radius:3px;
   padding:14px; margin:12px 0; font-family:var(--mono); font-size:11px;
 }
-.wallet-info-row { display:flex; justify-content:space-between; align-items:flex-start; padding:6px 0; border-bottom:1px solid #2a2a2a; gap:8px; }
+.wallet-info-row { display:flex; justify-content:space-between; align-items:flex-start; padding:6px 0; border-bottom:1px solid var(--border); gap:8px; }
 .wallet-info-row:last-child { border-bottom:none; }
 .wallet-info-key { color:var(--muted); flex-shrink:0; padding-top:1px; }
 .wallet-info-val { color:var(--text); font-weight:600; word-break:break-word; text-align:right; min-width:0; flex:1; }
@@ -547,7 +598,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
   display:flex; align-items:center; justify-content:space-between;
   padding:5px 8px 3px; cursor:pointer; user-select:none;
   border-bottom:1px solid var(--border);
-  position:sticky; top:0; z-index:5; background:#1a1a1a;
+  position:sticky; top:0; z-index:5; background:var(--panel);
 }
 .mw-group-title { font-family:var(--mono); font-size:9px; font-weight:700; color:var(--muted); letter-spacing:1.5px; }
 .mw-group-arrow { color:var(--muted); transition:transform .2s; display:inline-flex; align-items:center; }
@@ -576,7 +627,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
 .mw-sym-name { font-family:var(--mono); font-size:11px; font-weight:700; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 /* Desktop'ta chg badge gizle */
 #mwBody .mw-chg { display: none !important; }
-.mw-sym-full { font-family:var(--mono); font-size:9px; color:#a0a0a0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.mw-sym-full { font-family:var(--mono); font-size:9px; color:var(--muted); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 
 .mw-bid { font-family:var(--mono); font-size:11px; color:var(--sell); text-align:right; font-weight:600; transition: color .3s; }
 .mw-ask { font-family:var(--mono); font-size:11px; color:var(--buy); text-align:right; font-weight:600; transition: color .3s; }
@@ -591,7 +642,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
   grid-template-columns:24px 1fr 58px 58px 36px;
   padding:3px 8px;
   border-bottom:1px solid var(--border);
-  background:#181818;
+  background:var(--panel2);
   flex-shrink:0;
 }
 .mw-col-hdr { font-family:var(--mono); font-size:9px; color:var(--muted); text-align:right; }
@@ -608,7 +659,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
   position:absolute; top:8px; left:8px;
   z-index:50;
   display:flex; align-items:stretch; gap:0;
-  background:rgba(22,22,22,.95);
+  background:var(--overlay);
   border:1px solid var(--border2);
   border-radius:3px;
   box-shadow:0 4px 20px rgba(0,0,0,.6);
@@ -686,7 +737,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
 .qt-toggle {
   position:absolute; top:10px; right:10px; z-index:49;
   width:36px; height:36px;
-  background:rgba(15,15,15,.9);
+  background:var(--overlay2);
   border:1px solid rgba(240,185,11,.25);
   border-radius:50%;
   display:none; align-items:center; justify-content:center;
@@ -712,7 +763,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
 .auth-overlay.open { display:flex; }
 .auth-panel {
   width:420px; max-width:96vw;
-  background:#181818; border:1px solid #333;
+  background:var(--panel2); border:1px solid var(--border2);
   border-radius:4px; overflow:hidden;
   box-shadow:0 32px 80px rgba(0,0,0,.9);
 }
@@ -730,7 +781,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
 }
 .auth-tabs {
   display:grid; grid-template-columns:1fr 1fr;
-  border-bottom:1px solid #2a2a2a;
+  border-bottom:1px solid var(--border);
   margin:0 32px;
 }
 .auth-tab {
@@ -752,13 +803,13 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
   letter-spacing:.8px; margin-bottom:5px; display:block;
 }
 .auth-input {
-  width:100%; background:#181818; border:1px solid #333;
+  width:100%; background:var(--panel2); border:1px solid var(--border2);
   border-radius:2px; padding:10px 12px;
   color:var(--text); font-family:var(--mono); font-size:12px;
   outline:none; transition:border-color .15s;
 }
 .auth-input:focus { border-color:var(--accent); }
-.auth-input::placeholder { color:#777; }
+.auth-input::placeholder { color:var(--faint); }
 .auth-row2 { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
 
 .auth-btn {
@@ -767,14 +818,14 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
   letter-spacing:1px; cursor:pointer; margin-top:6px;
   transition:all .2s;
 }
-.auth-btn.primary { background:var(--accent); color:#1a1a1a; }
+.auth-btn.primary { background:var(--accent); color:var(--panel); }
 .auth-btn.primary:hover { filter:brightness(1.1); }
 
 .auth-divider {
   display:flex; align-items:center; gap:12px; margin:16px 0;
 }
-.auth-divider-line { flex:1; height:1px; background:#222; }
-.auth-divider-text { font-family:var(--mono); font-size:10px; color:#777; }
+.auth-divider-line { flex:1; height:1px; background:var(--panel2); }
+.auth-divider-text { font-family:var(--mono); font-size:10px; color:var(--faint); }
 
 .auth-note {
   font-family:var(--mono); font-size:10px; color:var(--muted);
@@ -806,7 +857,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
 .tb-user-badge:hover { background:var(--panel2); }
 .tb-user-avatar {
   width:22px; height:22px; border-radius:50%;
-  background:var(--accent); color:#1a1a1a;
+  background:var(--accent); color:var(--panel);
   font-weight:700; font-size:11px;
   display:flex; align-items:center; justify-content:center;
 }
@@ -823,9 +874,9 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
 /* Account type selector */
 .acc-type-grid { display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-bottom:14px; }
 .acc-type-opt {
-  border:1px solid #333; border-radius:2px; padding:10px;
+  border:1px solid var(--border2); border-radius:2px; padding:10px;
   cursor:pointer; transition:all .2s; text-align:center;
-  background:#181818;
+  background:var(--panel2);
 }
 .acc-type-opt:hover { border-color:var(--accent); }
 .acc-type-opt.selected { border-color:var(--accent); background:rgba(240,185,11,.07); }
@@ -842,7 +893,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
 }
 .apikey-modal.open { display:flex; }
 .apikey-box {
-  background:#181818; border:1px solid #333;
+  background:var(--panel2); border:1px solid var(--border2);
   border-radius:4px; padding:28px 32px; width:400px; max-width:94vw;
   box-shadow:0 24px 60px rgba(0,0,0,.8);
 }
@@ -855,22 +906,22 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
   margin-bottom:20px; line-height:1.7;
 }
 .apikey-input {
-  width:100%; background:#181818; border:1px solid #333;
+  width:100%; background:var(--panel2); border:1px solid var(--border2);
   border-radius:2px; padding:10px 12px; color:var(--text);
   font-family:var(--mono); font-size:12px; outline:none;
   transition:border-color .15s; margin-bottom:10px;
 }
 .apikey-input:focus { border-color:var(--accent); }
-.apikey-input::placeholder { color:#777; }
+.apikey-input::placeholder { color:var(--faint); }
 .apikey-btns { display:flex; gap:8px; margin-top:4px; }
 .apikey-btn {
   flex:1; padding:10px; border:none; border-radius:2px;
   font-family:var(--mono); font-size:11px; font-weight:700;
   letter-spacing:.5px; cursor:pointer; transition:all .2s;
 }
-.apikey-btn.primary { background:var(--accent); color:#1a1a1a; }
+.apikey-btn.primary { background:var(--accent); color:var(--panel); }
 .apikey-btn.primary:hover { filter:brightness(1.1); }
-.apikey-btn.secondary { background:#1a1a1a; border:1px solid #333; color:var(--muted); }
+.apikey-btn.secondary { background:var(--panel); border:1px solid var(--border2); color:var(--muted); }
 .apikey-link {
   font-family:var(--mono); font-size:10px; color:var(--muted);
   text-align:center; margin-top:12px; line-height:1.8;
@@ -893,7 +944,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
 .tb-api-btn:hover { color:var(--accent); }
 .tb-api-dot {
   width:7px; height:7px; border-radius:50%;
-  background:#999999; flex-shrink:0; transition:background .3s;
+  background:var(--muted); flex-shrink:0; transition:background .3s;
 }
 .tb-api-dot.live { background:#2979ff; box-shadow:0 0 6px #2979ff; }
 .tb-api-dot.err  { background:var(--sell); }
@@ -905,12 +956,12 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
 
 /* Mobile nav hidden on desktop */
 
-.ad-tab.ad-active { color:var(--accent) !important; border-bottom-color:var(--accent) !important; }.ct-type-btn { background:transparent; border:none; color:#c0c0c0; cursor:pointer; padding:3px 7px; font-size:13px; border-radius:3px; }
-.ct-type-btn.active { color:#fff; background:#181818; }
-.ct-type-btn:hover { color:#aaa; }
-.draw-tool-btn { background:transparent; border:none; color:#c0c0c0; cursor:pointer; padding:3px 8px; font-size:13px; border-radius:3px; }
-.draw-tool-btn.active { color:#f0b90b; background:#181818; }
-.draw-tool-btn:hover { color:#aaa; }
+.ad-tab.ad-active { color:var(--accent) !important; border-bottom-color:var(--accent) !important; }.ct-type-btn { background:transparent; border:none; color:var(--text); cursor:pointer; padding:3px 7px; font-size:13px; border-radius:3px; }
+.ct-type-btn.active { color:#fff; background:var(--panel2); }
+.ct-type-btn:hover { color:var(--muted); }
+.draw-tool-btn { background:transparent; border:none; color:var(--text); cursor:pointer; padding:3px 8px; font-size:13px; border-radius:3px; }
+.draw-tool-btn.active { color:#f0b90b; background:var(--panel2); }
+.draw-tool-btn:hover { color:var(--muted); }
 
 
 
@@ -941,7 +992,7 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
 .tx-modal-btn{flex:1;padding:9px 0;border:none;border-radius:8px;cursor:pointer;font-family:var(--sans);font-size:12px;font-weight:600;transition:filter .12s,opacity .12s;}
 .tx-modal-btn:hover{filter:brightness(1.12);}
 .tx-modal-btn.ghost{background:var(--panel2);color:var(--muted);border:1px solid var(--border2);}
-.tx-modal-btn.primary{background:var(--accent);color:#1a1a1a;}
+.tx-modal-btn.primary{background:var(--accent);color:var(--panel);}
 .tx-modal-btn.danger{background:var(--sell);color:#fff;}
 
 </style>
@@ -959,11 +1010,11 @@ function _authShow(sec) {
     if(l) l.style.display='block';
     if(r) r.style.display='none';
     if(tl){ tl.style.color='#f0b90b'; tl.style.borderBottomColor='#f0b90b'; }
-    if(tr){ tr.style.color='#999999'; tr.style.borderBottomColor='transparent'; }
+    if(tr){ tr.style.color='var(--muted)'; tr.style.borderBottomColor='transparent'; }
   } else {
     if(l) l.style.display='none';
     if(r) r.style.display='block';
-    if(tl){ tl.style.color='#999999'; tl.style.borderBottomColor='transparent'; }
+    if(tl){ tl.style.color='var(--muted)'; tl.style.borderBottomColor='transparent'; }
     if(tr){ tr.style.color='#f0b90b'; tr.style.borderBottomColor='#f0b90b'; }
   }
 }
@@ -973,10 +1024,10 @@ function authAccType(t) {
   var l = document.getElementById('opt-live');
   if(t==='demo') {
     if(d){ d.style.border='1px solid #f0b90b'; d.style.background='rgba(240,185,11,.07)'; }
-    if(l){ l.style.border='1px solid #333'; l.style.background='#111'; }
+    if(l){ l.style.border='1px solid var(--border2)'; l.style.background='var(--bg)'; }
   } else {
     if(l){ l.style.border='1px solid #f0b90b'; l.style.background='rgba(240,185,11,.07)'; }
-    if(d){ d.style.border='1px solid #333'; d.style.background='#111'; }
+    if(d){ d.style.border='1px solid var(--border2)'; d.style.background='var(--bg)'; }
   }
 }
 function _authClose() {
@@ -1710,6 +1761,7 @@ function initAuth(){
       <span id="connTxt">Bağlanıyor...</span>
       <span id="apiDot" style="display:none;"></span>
     </div>
+    <div class="tb-theme-toggle" id="themeToggleBtn" onclick="toggleTheme()" title="Görünüm"></div>
     <div class="tb-login-btn" id="tbLoginBtn" onclick="openAuth('login')">◉ GİRİŞ / KAYIT</div>
     <div class="tb-user-badge" id="tbUserBadge" style="display:none" onclick="toggleUserDropdown(event)">
       <div class="tb-user-avatar" id="tbUserAvatar">?</div>
@@ -1717,7 +1769,7 @@ function initAuth(){
         <div class="tb-user-name" id="tbUserName">—</div>
         <div style="display:flex;align-items:center;gap:6px">
           <div class="tb-user-type" id="tbUserType">Demo</div>
-          <div id="tbUserLogin" style="font-family:var(--mono);font-size:9px;color:#b0b0b0;letter-spacing:.5px"></div>
+          <div id="tbUserLogin" style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.5px"></div>
         </div>
       </div>
       <!-- Dropdown -->
@@ -1768,7 +1820,7 @@ function initAuth(){
           <input id="otSymSearch" type="text" placeholder="Sembol ara..."
             style="width:100%;padding:6px 10px;background:var(--bg);border:1px solid var(--border2);border-radius:3px;color:var(--text);font-family:var(--mono);font-size:11px;outline:none;box-sizing:border-box"
             oninput="otSymFilter(this.value)" onfocus="otSymFilter(this.value)" autocomplete="off">
-          <div id="otSymList" style="display:none;position:absolute;top:100%;left:0;right:0;background:#181818;border:1px solid var(--border2);border-top:none;border-radius:0 0 3px 3px;max-height:180px;overflow-y:auto;z-index:500"></div>
+          <div id="otSymList" style="display:none;position:absolute;top:100%;left:0;right:0;background:var(--panel2);border:1px solid var(--border2);border-top:none;border-radius:0 0 3px 3px;max-height:180px;overflow-y:auto;z-index:500"></div>
         </div>
         <div class="ot-sym" id="otSym">BTC/USDT</div>
         <div class="ot-price-row">
@@ -1874,12 +1926,12 @@ function initAuth(){
         <button class="ct-btn active" onclick="setInt('4h',this)">H4</button>
         <button class="ct-btn" onclick="setInt('1d',this)">D1</button>
       </div>
-      <div style="display:flex;gap:2px;padding:0 6px;border-left:1px solid #2a2a2a">
+      <div style="display:flex;gap:2px;padding:0 6px;border-left:1px solid var(--border)">
         <button class="ct-type-btn active" data-type="candlestick" onclick="setChartType('candlestick')" title="Mum">🕯</button>
         <button class="ct-type-btn" data-type="bar" onclick="setChartType('bar')" title="Bar">▐</button>
         <button class="ct-type-btn" data-type="line" onclick="setChartType('line')" title="Çizgi">╱</button>
       </div>
-      <div style="display:flex;gap:2px;padding:0 6px;border-left:1px solid #2a2a2a">
+      <div style="display:flex;gap:2px;padding:0 6px;border-left:1px solid var(--border)">
         <button class="draw-tool-btn" data-tool="trendline" onclick="setDrawTool('trendline')" title="Trend Çizgisi">╱</button>
         <button class="draw-tool-btn" data-tool="fibonacci" onclick="setDrawTool('fibonacci')" title="Fibonacci">ϕ</button>
         <button class="ct-btn" onclick="clearDrawings()" title="Çizimleri Temizle" style="color:#ef5350">✕</button>
@@ -1926,7 +1978,7 @@ function initAuth(){
           <div class="ind-popup-row"><span class="ind-popup-label">MACD Hızlı</span><input class="ind-popup-input" id="cfg_macd_fast" type="number" value="12" min="2"></div>
           <div class="ind-popup-row"><span class="ind-popup-label">MACD Yavaş</span><input class="ind-popup-input" id="cfg_macd_slow" type="number" value="26" min="2"></div>
           <div class="ind-popup-row"><span class="ind-popup-label">MACD Sinyal</span><input class="ind-popup-input" id="cfg_macd_sig" type="number" value="9" min="2"></div>
-          <div class="ind-popup-row" style="margin-top:10px;border-top:1px solid #2a2a2a;padding-top:10px;">
+          <div class="ind-popup-row" style="margin-top:10px;border-top:1px solid var(--border);padding-top:10px;">
             <span class="ind-popup-label">Al/Sat Seviyeleri</span>
             <label style="display:flex;align-items:center;gap:6px;cursor:pointer;">
               <input type="checkbox" id="cfg_show_pos_lines" checked
@@ -1997,7 +2049,7 @@ function initAuth(){
       </div>
 
       <!-- ACCOUNT STATUS BAR -->
-      <div style="flex-shrink:0;display:flex;align-items:center;gap:0;border-bottom:1px solid var(--border);background:#1a1a1a;overflow-x:auto">
+      <div style="flex-shrink:0;display:flex;align-items:center;gap:0;border-bottom:1px solid var(--border);background:var(--panel);overflow-x:auto">
         <div style="display:flex;flex-direction:column;align-items:flex-start;padding:3px 14px;border-right:1px solid var(--border);white-space:nowrap;flex-shrink:0;min-width:110px">
           <span style="font-family:var(--mono);font-size:9px;color:var(--muted);letter-spacing:.5px">BAKİYE</span>
           <span style="font-family:var(--mono);font-size:11px;font-weight:700;color:var(--text)" id="sbBalance">$10,000.00</span>
@@ -2034,13 +2086,13 @@ function initAuth(){
           <table class="orders-table">
             <thead><tr>
   <th onclick="sortPos('id')" title="ID'ye göre sırala" style="cursor:pointer;user-select:none"># <span id="psort-id" style="color:#2979ff;font-size:9px;">↓</span></th>
-  <th onclick="sortPos('sym')" title="Sembole göre sırala" style="cursor:pointer;user-select:none">Sembol <span id="psort-sym" style="color:#777;font-size:9px;">⇅</span></th>
+  <th onclick="sortPos('sym')" title="Sembole göre sırala" style="cursor:pointer;user-select:none">Sembol <span id="psort-sym" style="color:var(--faint);font-size:9px;">⇅</span></th>
   <th>Yön</th>
-  <th onclick="sortPos('qty')" title="Miktara göre sırala" style="cursor:pointer;user-select:none">Miktar <span id="psort-qty" style="color:#777;font-size:9px;">⇅</span></th>
-  <th onclick="sortPos('time')" title="Tarihe göre sırala" style="cursor:pointer;user-select:none">Tarih/Saat <span id="psort-time" style="color:#777;font-size:9px;">⇅</span></th>
+  <th onclick="sortPos('qty')" title="Miktara göre sırala" style="cursor:pointer;user-select:none">Miktar <span id="psort-qty" style="color:var(--faint);font-size:9px;">⇅</span></th>
+  <th onclick="sortPos('time')" title="Tarihe göre sırala" style="cursor:pointer;user-select:none">Tarih/Saat <span id="psort-time" style="color:var(--faint);font-size:9px;">⇅</span></th>
   <th>Açılış</th><th>Güncel</th><th>SL</th><th>TP</th>
   <th>Swap</th>
-  <th onclick="sortPos('pnl')" title="K/Z'a göre sırala" style="cursor:pointer;user-select:none">K/Z <span id="psort-pnl" style="color:#777;font-size:9px;">⇅</span></th>
+  <th onclick="sortPos('pnl')" title="K/Z'a göre sırala" style="cursor:pointer;user-select:none">K/Z <span id="psort-pnl" style="color:var(--faint);font-size:9px;">⇅</span></th>
   <th>Kapat</th>
 </tr></thead>
             <tbody id="posBody"><tr><td colspan="11" class="empty-msg">Açık pozisyon yok</td></tr></tbody>
@@ -2051,13 +2103,13 @@ function initAuth(){
           <table class="orders-table">
             <thead><tr>
   <th onclick="sortHist('time')" style="cursor:pointer;user-select:none">Zaman <span id="hsort-time" style="color:#2979ff;font-size:9px;">↓</span></th>
-  <th onclick="sortHist('sym')" style="cursor:pointer;user-select:none">Sembol <span id="hsort-sym" style="color:#777;font-size:9px;">⇅</span></th>
+  <th onclick="sortHist('sym')" style="cursor:pointer;user-select:none">Sembol <span id="hsort-sym" style="color:var(--faint);font-size:9px;">⇅</span></th>
   <th>Yön</th>
-  <th onclick="sortHist('qty')" style="cursor:pointer;user-select:none">Miktar <span id="hsort-qty" style="color:#777;font-size:9px;">⇅</span></th>
+  <th onclick="sortHist('qty')" style="cursor:pointer;user-select:none">Miktar <span id="hsort-qty" style="color:var(--faint);font-size:9px;">⇅</span></th>
   <th>Açılış</th><th>Kapanış</th>
-  <th onclick="sortHist('pnl')" style="cursor:pointer;user-select:none">K/Z $ <span id="hsort-pnl" style="color:#777;font-size:9px;">⇅</span></th>
+  <th onclick="sortHist('pnl')" style="cursor:pointer;user-select:none">K/Z $ <span id="hsort-pnl" style="color:var(--faint);font-size:9px;">⇅</span></th>
   <th>Swap</th>
-  <th onclick="sortHist('reason')" style="cursor:pointer;user-select:none">Sebep <span id="hsort-reason" style="color:#777;font-size:9px;">⇅</span></th>
+  <th onclick="sortHist('reason')" style="cursor:pointer;user-select:none">Sebep <span id="hsort-reason" style="color:var(--faint);font-size:9px;">⇅</span></th>
 </tr></thead>
             <tbody id="histBody"><tr><td colspan="7" class="empty-msg">İşlem geçmişi boş</td></tr></tbody>
           </table>
@@ -2075,7 +2127,7 @@ function initAuth(){
 
         <!-- FİNANS GEÇMİŞİ -->
         <div class="bp-section" id="bp-finans" style="padding:0;">
-          <div id="bp-finans-content" style="font-family:var(--mono);font-size:11px;color:#b0b0b0;padding:16px;">Yükleniyor...</div>
+          <div id="bp-finans-content" style="font-family:var(--mono);font-size:11px;color:var(--muted);padding:16px;">Yükleniyor...</div>
         </div>
       </div>
     </div>
@@ -2088,7 +2140,7 @@ function initAuth(){
      KAYIT / GİRİŞ OVERLAY
 ══════════════════════════════════════════ -->
 <div id="authOverlay" style="position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.92);display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px)">
-<div style="background:#181818;border:1px solid #333;border-radius:4px;width:380px;max-width:95vw;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.9)">
+<div style="background:var(--panel2);border:1px solid var(--border2);border-radius:4px;width:380px;max-width:95vw;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.9)">
   
   <!-- Tabs -->
   <div style="padding:24px 28px 0">
@@ -2096,9 +2148,9 @@ function initAuth(){
       <img src="data:image/png;base64,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" alt="Neta Menkul Değerler A.Ş." style="height:72px;width:auto;object-fit:contain">
     </div>
     <div style="font-family:monospace;font-size:10px;color:#c0c0c0;text-align:center;letter-spacing:2px;margin-bottom:20px">PROFESSIONAL TRADING TERMINAL</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid #2a2a2a">
+    <div style="display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--border)">
       <div id="tab-login" onclick="_authShow('login')" style="padding:10px;text-align:center;font-family:monospace;font-size:11px;font-weight:700;color:#f0b90b;border-bottom:2px solid #f0b90b;cursor:pointer">GİRİŞ YAP</div>
-      <div id="tab-register" onclick="_authShow('register')" style="padding:10px;text-align:center;font-family:monospace;font-size:11px;font-weight:700;color:#b0b0b0;border-bottom:2px solid transparent;cursor:pointer">HESAP AÇ</div>
+      <div id="tab-register" onclick="_authShow('register')" style="padding:10px;text-align:center;font-family:monospace;font-size:11px;font-weight:700;color:var(--muted);border-bottom:2px solid transparent;cursor:pointer">HESAP AÇ</div>
     </div>
   </div>
 
@@ -2106,16 +2158,16 @@ function initAuth(){
   <div id="sec-login" style="padding:20px 28px 24px">
     <div id="err-login" style="display:none;background:rgba(239,83,80,.1);border:1px solid rgba(239,83,80,.3);color:#ef5350;font-family:monospace;font-size:11px;padding:8px;margin-bottom:12px;border-radius:2px"></div>
     <div style="margin-bottom:12px">
-      <div style="font-family:monospace;font-size:10px;color:#c0c0c0;margin-bottom:4px">LOGIN NO / E-POSTA</div>
-      <input id="inp-email" type="text" placeholder="10000 veya ornek@mail.com" style="width:100%;background:#181818;border:1px solid #333;border-radius:2px;padding:9px 11px;color:#e0e0e0;font-family:monospace;font-size:12px;outline:none;box-sizing:border-box">
+      <div style="font-family:monospace;font-size:10px;color:var(--text);margin-bottom:4px">LOGIN NO / E-POSTA</div>
+      <input id="inp-email" type="text" placeholder="10000 veya ornek@mail.com" style="width:100%;background:var(--panel2);border:1px solid var(--border2);border-radius:2px;padding:9px 11px;color:var(--text);font-family:monospace;font-size:12px;outline:none;box-sizing:border-box">
     </div>
     <div style="margin-bottom:16px">
-      <div style="font-family:monospace;font-size:10px;color:#c0c0c0;margin-bottom:4px">ŞİFRE</div>
-      <input id="inp-pass" type="password" onkeydown="if(event.key==='Enter')_doLogin()" placeholder="••••••••" style="width:100%;background:#181818;border:1px solid #333;border-radius:2px;padding:9px 11px;color:#e0e0e0;font-family:monospace;font-size:12px;outline:none;box-sizing:border-box">
+      <div style="font-family:monospace;font-size:10px;color:var(--text);margin-bottom:4px">ŞİFRE</div>
+      <input id="inp-pass" type="password" onkeydown="if(event.key==='Enter')_doLogin()" placeholder="••••••••" style="width:100%;background:var(--panel2);border:1px solid var(--border2);border-radius:2px;padding:9px 11px;color:var(--text);font-family:monospace;font-size:12px;outline:none;box-sizing:border-box">
     </div>
-    <button id="btn-login" onclick="_doLogin()" style="width:100%;padding:11px;background:#f0b90b;color:#1a1a1a;border:none;border-radius:2px;font-family:monospace;font-size:12px;font-weight:700;cursor:pointer;margin-bottom:10px">GİRİŞ YAP</button>
-    <button id="btn-demo" onclick="_doDemo()" style="width:100%;padding:11px;background:#1a1a1a;color:#a0a0a0;border:1px solid #333;border-radius:2px;font-family:monospace;font-size:12px;cursor:pointer;margin-bottom:12px">🎮 DEMO HESAP İLE DEVAM ET</button>
-    <div style="font-family:monospace;font-size:10px;color:#b0b0b0;text-align:center">Hesabınız yok mu? <span id="go-register" onclick="_authShow('register')" style="color:#f0b90b;cursor:pointer">Kayıt olun</span></div>
+    <button id="btn-login" onclick="_doLogin()" style="width:100%;padding:11px;background:#f0b90b;color:var(--panel);border:none;border-radius:2px;font-family:monospace;font-size:12px;font-weight:700;cursor:pointer;margin-bottom:10px">GİRİŞ YAP</button>
+    <button id="btn-demo" onclick="_doDemo()" style="width:100%;padding:11px;background:var(--panel);color:var(--muted);border:1px solid var(--border2);border-radius:2px;font-family:monospace;font-size:12px;cursor:pointer;margin-bottom:12px">🎮 DEMO HESAP İLE DEVAM ET</button>
+    <div style="font-family:monospace;font-size:10px;color:var(--muted);text-align:center">Hesabınız yok mu? <span id="go-register" onclick="_authShow('register')" style="color:#f0b90b;cursor:pointer">Kayıt olun</span></div>
   </div>
 
   <!-- Kayıt -->
@@ -2124,44 +2176,44 @@ function initAuth(){
     <div id="ok-register" style="display:none;background:rgba(38,166,154,.1);border:1px solid rgba(38,166,154,.3);color:#2979ff;font-family:monospace;font-size:11px;padding:8px;margin-bottom:12px;border-radius:2px;text-align:center"></div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:12px">
       <div>
-        <div style="font-family:monospace;font-size:10px;color:#c0c0c0;margin-bottom:4px">AD</div>
-        <input id="inp-name" placeholder="Adınız" style="width:100%;background:#181818;border:1px solid #333;border-radius:2px;padding:9px 11px;color:#e0e0e0;font-family:monospace;font-size:12px;outline:none;box-sizing:border-box">
+        <div style="font-family:monospace;font-size:10px;color:var(--text);margin-bottom:4px">AD</div>
+        <input id="inp-name" placeholder="Adınız" style="width:100%;background:var(--panel2);border:1px solid var(--border2);border-radius:2px;padding:9px 11px;color:var(--text);font-family:monospace;font-size:12px;outline:none;box-sizing:border-box">
       </div>
       <div>
-        <div style="font-family:monospace;font-size:10px;color:#c0c0c0;margin-bottom:4px">SOYAD</div>
-        <input id="inp-surname" placeholder="Soyadınız" style="width:100%;background:#181818;border:1px solid #333;border-radius:2px;padding:9px 11px;color:#e0e0e0;font-family:monospace;font-size:12px;outline:none;box-sizing:border-box">
+        <div style="font-family:monospace;font-size:10px;color:var(--text);margin-bottom:4px">SOYAD</div>
+        <input id="inp-surname" placeholder="Soyadınız" style="width:100%;background:var(--panel2);border:1px solid var(--border2);border-radius:2px;padding:9px 11px;color:var(--text);font-family:monospace;font-size:12px;outline:none;box-sizing:border-box">
       </div>
     </div>
     <div style="margin-bottom:12px">
-      <div style="font-family:monospace;font-size:10px;color:#c0c0c0;margin-bottom:4px">TELEFON</div>
-      <input id="inp-phone" type="tel" placeholder="+90 5__ ___ __ __" style="width:100%;background:#181818;border:1px solid #333;border-radius:2px;padding:9px 11px;color:#e0e0e0;font-family:monospace;font-size:12px;outline:none;box-sizing:border-box">
+      <div style="font-family:monospace;font-size:10px;color:var(--text);margin-bottom:4px">TELEFON</div>
+      <input id="inp-phone" type="tel" placeholder="+90 5__ ___ __ __" style="width:100%;background:var(--panel2);border:1px solid var(--border2);border-radius:2px;padding:9px 11px;color:var(--text);font-family:monospace;font-size:12px;outline:none;box-sizing:border-box">
     </div>
     <div style="margin-bottom:12px">
-      <div style="font-family:monospace;font-size:10px;color:#c0c0c0;margin-bottom:4px">E-POSTA</div>
-      <input id="inp-remail" type="email" placeholder="ornek@mail.com" style="width:100%;background:#181818;border:1px solid #333;border-radius:2px;padding:9px 11px;color:#e0e0e0;font-family:monospace;font-size:12px;outline:none;box-sizing:border-box">
+      <div style="font-family:monospace;font-size:10px;color:var(--text);margin-bottom:4px">E-POSTA</div>
+      <input id="inp-remail" type="email" placeholder="ornek@mail.com" style="width:100%;background:var(--panel2);border:1px solid var(--border2);border-radius:2px;padding:9px 11px;color:var(--text);font-family:monospace;font-size:12px;outline:none;box-sizing:border-box">
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px">
       <div>
-        <div style="font-family:monospace;font-size:10px;color:#c0c0c0;margin-bottom:4px">ŞİFRE</div>
-        <input id="inp-rpass" type="password" placeholder="Min 6 karakter" style="width:100%;background:#181818;border:1px solid #333;border-radius:2px;padding:9px 11px;color:#e0e0e0;font-family:monospace;font-size:12px;outline:none;box-sizing:border-box">
+        <div style="font-family:monospace;font-size:10px;color:var(--text);margin-bottom:4px">ŞİFRE</div>
+        <input id="inp-rpass" type="password" placeholder="Min 6 karakter" style="width:100%;background:var(--panel2);border:1px solid var(--border2);border-radius:2px;padding:9px 11px;color:var(--text);font-family:monospace;font-size:12px;outline:none;box-sizing:border-box">
       </div>
       <div>
-        <div style="font-family:monospace;font-size:10px;color:#c0c0c0;margin-bottom:4px">TEKRAR</div>
-        <input id="inp-rpass2" type="password" placeholder="••••••••" style="width:100%;background:#181818;border:1px solid #333;border-radius:2px;padding:9px 11px;color:#e0e0e0;font-family:monospace;font-size:12px;outline:none;box-sizing:border-box">
+        <div style="font-family:monospace;font-size:10px;color:var(--text);margin-bottom:4px">TEKRAR</div>
+        <input id="inp-rpass2" type="password" placeholder="••••••••" style="width:100%;background:var(--panel2);border:1px solid var(--border2);border-radius:2px;padding:9px 11px;color:var(--text);font-family:monospace;font-size:12px;outline:none;box-sizing:border-box">
       </div>
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:16px">
       <div id="opt-demo" onclick="authAccType('demo')" style="border:1px solid #f0b90b;background:rgba(240,185,11,.07);border-radius:2px;padding:10px;text-align:center;cursor:pointer">
-        <div style="font-size:16px">🎮</div><div style="font-family:monospace;font-size:11px;color:#e0e0e0;font-weight:700">DEMO</div>
-        <div style="font-family:monospace;font-size:9px;color:#aaaaaa">$10,000 sanal</div>
+        <div style="font-size:16px">🎮</div><div style="font-family:monospace;font-size:11px;color:var(--text);font-weight:700">DEMO</div>
+        <div style="font-family:monospace;font-size:9px;color:var(--muted)">$10,000 sanal</div>
       </div>
-      <div id="opt-live" onclick="authAccType('live')" style="border:1px solid #333;background:#181818;border-radius:2px;padding:10px;text-align:center;cursor:pointer">
-        <div style="font-size:16px">💼</div><div style="font-family:monospace;font-size:11px;color:#e0e0e0;font-weight:700">GERÇEK</div>
-        <div style="font-family:monospace;font-size:9px;color:#aaaaaa">Canlı hesap</div>
+      <div id="opt-live" onclick="authAccType('live')" style="border:1px solid var(--border2);background:var(--panel2);border-radius:2px;padding:10px;text-align:center;cursor:pointer">
+        <div style="font-size:16px">💼</div><div style="font-family:monospace;font-size:11px;color:var(--text);font-weight:700">GERÇEK</div>
+        <div style="font-family:monospace;font-size:9px;color:var(--muted)">Canlı hesap</div>
       </div>
     </div>
-    <button id="btn-register" onclick="_doRegister()" style="width:100%;padding:11px;background:#f0b90b;color:#1a1a1a;border:none;border-radius:2px;font-family:monospace;font-size:12px;font-weight:700;cursor:pointer;margin-bottom:12px">HESAP OLUŞTUR</button>
-    <div style="font-family:monospace;font-size:10px;color:#b0b0b0;text-align:center">Hesabınız var mı? <span id="go-login" onclick="_authShow('login')" style="color:#f0b90b;cursor:pointer">Giriş yapın</span></div>
+    <button id="btn-register" onclick="_doRegister()" style="width:100%;padding:11px;background:#f0b90b;color:var(--panel);border:none;border-radius:2px;font-family:monospace;font-size:12px;font-weight:700;cursor:pointer;margin-bottom:12px">HESAP OLUŞTUR</button>
+    <div style="font-family:monospace;font-size:10px;color:var(--muted);text-align:center">Hesabınız var mı? <span id="go-login" onclick="_authShow('login')" style="color:#f0b90b;cursor:pointer">Giriş yapın</span></div>
   </div>
 
 </div>
@@ -2242,7 +2294,7 @@ function initAuth(){
     <!-- İŞLEM GEÇMİŞİ -->
     <div class="wallet-section" id="ws-history" style="overflow-y:auto;max-height:400px;">
       <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:8px;letter-spacing:.5px;">FİNANS GEÇMİŞİ</div>
-      <div id="walletHistoryContent" style="font-family:var(--mono);font-size:11px;color:#b0b0b0;">Yükleniyor...</div>
+      <div id="walletHistoryContent" style="font-family:var(--mono);font-size:11px;color:var(--muted);">Yükleniyor...</div>
     </div>
 
   </div>
@@ -2417,6 +2469,12 @@ var _lwChartType = 'candlestick';
 var BN_INTERVALS = {'1m':'1m','5m':'5m','15m':'15m','30m':'30m','1h':'1h','4h':'4h','1d':'1d'};
 
 /* ── initChart: LW Chart oluştur ─────────────────── */
+function _lwThemeColors() {
+  var light = document.documentElement.getAttribute('data-theme') === 'light';
+  return light
+    ? { bg:'#ffffff', text:'#555555', grid:'rgba(0,0,0,0.06)', border:'#dcdcdc', cross:'rgba(0,0,0,0.25)', label:'#e8e8e8' }
+    : { bg:'#0f0f0f', text:'#888888', grid:'rgba(255,255,255,0.04)', border:'#222222', cross:'rgba(255,255,255,0.2)', label:'#222222' };
+}
 function initChart() {
   var wrap = document.getElementById('lwChart');
   if(!wrap) return;
@@ -2427,33 +2485,34 @@ function initChart() {
   }
   if(_lw) { try{_lw.remove();}catch(e){} }
 
+  var _lwc = _lwThemeColors();
   _lw = LightweightCharts.createChart(wrap, {
     width:  wrap.offsetWidth  || 800,
     height: wrap.offsetHeight || 420,
     layout: {
-      background: {type:'solid', color:'#0f0f0f'},
-      textColor:  '#888',
+      background: {type:'solid', color:_lwc.bg},
+      textColor:  _lwc.text,
       fontSize:   11,
       fontFamily: 'monospace',
     },
     grid: {
-      vertLines: {color:'rgba(255,255,255,0.04)', style:0},
-      horzLines: {color:'rgba(255,255,255,0.04)', style:0},
+      vertLines: {color:_lwc.grid, style:0},
+      horzLines: {color:_lwc.grid, style:0},
     },
     crosshair: {
       mode: 1,
-      vertLine: {color:'rgba(255,255,255,0.2)', labelBackgroundColor:'#222'},
-      horzLine: {color:'rgba(255,255,255,0.2)', labelBackgroundColor:'#222'},
+      vertLine: {color:_lwc.cross, labelBackgroundColor:_lwc.label},
+      horzLine: {color:_lwc.cross, labelBackgroundColor:_lwc.label},
     },
     rightPriceScale: {
-      borderColor:     '#222',
+      borderColor:     _lwc.border,
       scaleMarginTop:  0.08,
       scaleMarginBottom: 0.08,
       entireTextOnly:  false,
       autoScale:       true,
     },
     timeScale: {
-      borderColor:       '#222',
+      borderColor:       _lwc.border,
       timeVisible:       true,
       secondsVisible:    false,
       fixLeftEdge:       true,
@@ -2819,7 +2878,7 @@ function startCandleWs(sym, interval) {
         msg.className = 'no-chart-msg';
         msg.style.cssText = 'position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:8px;pointer-events:none;';
         msg.innerHTML = '<div style="font-family:var(--mono);font-size:12px;color:#a8a8a8;">Grafik verisi bekleniyor</div>'
-          + '<div style="font-family:var(--mono);font-size:10px;color:#777;">Twelvedata API bağlantısı gerekli</div>';
+          + '<div style="font-family:var(--mono);font-size:10px;color:var(--faint);">Twelvedata API bağlantısı gerekli</div>';
         wrap.appendChild(msg);
       }
       return;
@@ -3307,7 +3366,7 @@ function _lwDrawClick(e) {
     var fp1 = _lwDrawPoints[0], fp2 = _lwDrawPoints[1];
     var diff = fp2.price - fp1.price;
     var levels = [0, 0.236, 0.382, 0.5, 0.618, 0.786, 1];
-    var colors  = ['#aaa','#FF9800','#2979ff','#2196F3','#9C27B0','#E91E63','#aaa'];
+    var colors  = ['var(--muted)','#FF9800','#2979ff','#2196F3','#9C27B0','#E91E63','var(--muted)'];
     levels.forEach(function(lvl, i) {
       var p = fp2.price - diff*lvl;
       var s = _lwSeries.createPriceLine({price:p, color:colors[i], lineWidth:1, lineStyle:2, axisLabelVisible:true, title:'Fib '+Math.round(lvl*100)+'%'});
@@ -3444,7 +3503,7 @@ function otSymFilter(val, mode) {
   list.innerHTML = filtered.slice(0,20).map(function(s){
     var ico = (s.icon&&s.icon.trim()&&s.icon.trim().length<=2) ? s.icon.trim() : '';
     var dot = ico ? ico : '<span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:'+(s.color||'#f0b90b')+';flex-shrink:0"></span>';
-    return '<div data-sym="'+s.sym+'" data-mode="'+(mode||'')+'" onclick="otSymPick(this.dataset.sym,this.dataset.mode)" style="padding:8px 12px;cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--text);border-bottom:1px solid #222;display:flex;align-items:center;gap:8px;transition:background .1s" onmouseover="this.style.background=\'#222\'" onmouseout="this.style.background=\'\'">'
+    return '<div data-sym="'+s.sym+'" data-mode="'+(mode||'')+'" onclick="otSymPick(this.dataset.sym,this.dataset.mode)" style="padding:8px 12px;cursor:pointer;font-family:var(--mono);font-size:11px;color:var(--text);border-bottom:1px solid var(--panel2);display:flex;align-items:center;gap:8px;transition:background .1s" onmouseover="this.style.background=\'var(--panel2)\'" onmouseout="this.style.background=\'\'">'
       + dot
       + '<div><div style="font-weight:700">'+s.sym+'</div><div style="font-size:9px;color:var(--muted)">'+(s.label||s.full||'')+'</div></div>'
       + '</div>';
@@ -3857,7 +3916,7 @@ function sortPos(col) {
     var el = document.getElementById('psort-' + c);
     if (!el) return;
     if (c === _posSortCol) { el.textContent = _posSortDir === 1 ? '↑' : '↓'; el.style.color = '#2979ff'; }
-    else { el.textContent = '⇅'; el.style.color = '#444'; }
+    else { el.textContent = '⇅'; el.style.color = 'var(--faint2)'; }
   });
   renderPositions();
 }
@@ -3974,11 +4033,11 @@ function renderPositions() {
       <td style="${_posSortCol==='sym'?'color:#fff;font-weight:600;':''}">${pos.label||pos.sym||'?'}</td>
       <td><span class="${pos.side==='buy'?'badge-buy':'badge-sell'}">${pos.side==='buy'?'AL':'SAT'}</span></td>
       <td>${pos.qty}</td>
-      <td style="font-size:10px;color:${_posSortCol==='time'?'#aaa':'var(--muted)'};white-space:nowrap">${pos.time ? fmtDate(pos.time) : '—'}</td>
+      <td style="font-size:10px;color:${_posSortCol==='time'?'var(--muted)':'var(--muted)'};white-space:nowrap">${pos.time ? fmtDate(pos.time) : '—'}</td>
       <td>$${fp(pos.openPrice, pos.decimals||2)}</td>
       <td data-cur="${pos.id}">$${fp(cur, pos.decimals||2)}</td>
-      <td onclick="txEditField(${pos.id},'sl')" title="Düzenlemek için tıkla" style="font-size:10px;color:#ef5350;cursor:pointer">${pos.sl ? '$'+fp(pos.sl,pos.decimals||2) : '<span style="color:#555;border-bottom:1px dashed #555">—</span>'}</td>
-      <td onclick="txEditField(${pos.id},'tp')" title="Düzenlemek için tıkla" style="font-size:10px;color:#2979ff;cursor:pointer">${pos.tp ? '$'+fp(pos.tp,pos.decimals||2) : '<span style="color:#555;border-bottom:1px dashed #555">—</span>'}</td>
+      <td onclick="txEditField(${pos.id},'sl')" title="Düzenlemek için tıkla" style="font-size:10px;color:#ef5350;cursor:pointer">${pos.sl ? '$'+fp(pos.sl,pos.decimals||2) : '<span style="color:var(--faint2);border-bottom:1px dashed var(--faint2)">—</span>'}</td>
+      <td onclick="txEditField(${pos.id},'tp')" title="Düzenlemek için tıkla" style="font-size:10px;color:#2979ff;cursor:pointer">${pos.tp ? '$'+fp(pos.tp,pos.decimals||2) : '<span style="color:var(--faint2);border-bottom:1px dashed var(--faint2)">—</span>'}</td>
       <td style="font-size:10px;color:${swapAcc<0?'#ef5350':swapAcc>0?'#2979ff':'var(--muted)'}">${swapAcc!==0?(swapAcc>0?'+':'')+swapAcc.toFixed(2):'—'}</td>
       <td data-pnl="${pos.id}" style="font-weight:700;color:${pnlColor};text-align:right">${pnlSign}$${fp(Math.abs(pnl))}</td>
       <td><button class="close-ord" onclick="txPartialClose(${pos.id})" title="Parçalı kapat" style="margin-right:4px">◐</button><button class="close-ord" onclick="closePosition(${pos.id})">Kapat</button></td>
@@ -4191,7 +4250,7 @@ function sortHist(col) {
     var el = document.getElementById('hsort-' + c);
     if (!el) return;
     if (c === _histSortCol) { el.textContent = _histSortDir === 1 ? '↑' : '↓'; el.style.color = '#2979ff'; }
-    else { el.textContent = '⇅'; el.style.color = '#444'; }
+    else { el.textContent = '⇅'; el.style.color = 'var(--faint2)'; }
   });
   renderHistory();
 }
@@ -4227,7 +4286,7 @@ function renderHistory() {
   }
 
   var _reasonMap = {
-    'manuel':   '<span style="color:#a0a0a0;font-size:10px">Manuel</span>',
+    'manuel':   '<span style="color:var(--muted);font-size:10px">Manuel</span>',
     'stop_out': '<span style="color:#ef5350;font-size:10px;font-weight:700">Stop Out</span>',
     'sl':       '<span style="color:#ef5350;font-size:10px">Stop Loss</span>',
     'tp':       '<span style="color:#2979ff;font-size:10px">Take Profit</span>',
@@ -4252,17 +4311,17 @@ function renderHistory() {
     var cls  = pnl >= 0 ? 'up' : 'down';
     var pnlColor = pnl >= 0 ? '#2979ff' : '#ef5350';
     var r    = h.closeReason || 'manuel';
-    var rl   = _reasonMap[r] || ('<span style="color:#a0a0a0;font-size:10px">' + r + '</span>');
+    var rl   = _reasonMap[r] || ('<span style="color:var(--muted);font-size:10px">' + r + '</span>');
     var pnlStyle = _histSortCol === 'pnl' ? 'font-weight:700;' : '';
     return '<tr>'
-      + '<td style="color:' + (_histSortCol==='time'?'#aaa':'var(--muted)') + ';font-size:10px;white-space:nowrap">' + (h.closeTime ? fmtDate(h.closeTime) : '—') + '</td>'
+      + '<td style="color:' + (_histSortCol==='time'?'var(--muted)':'var(--muted)') + ';font-size:10px;white-space:nowrap">' + (h.closeTime ? fmtDate(h.closeTime) : '—') + '</td>'
       + '<td style="' + (_histSortCol==='sym'?'color:#fff;font-weight:600;':'') + '">' + (h.label||h.sym||'?') + '</td>'
       + '<td><span class="' + (h.side==='buy'?'badge-buy':'badge-sell') + '">' + (h.side==='buy'?'AL':'SAT') + '</span></td>'
       + '<td>' + h.qty + '</td>'
       + '<td>$' + _hFp(h.openPrice, h.sym) + '</td>'
       + '<td>$' + _hFp(h.closePrice, h.sym) + '</td>'
       + '<td class="' + cls + '" style="' + pnlStyle + 'color:' + pnlColor + ';">' + _hPnl(pnl) + '</td>'
-      + '<td style="font-size:10px;color:' + (swap<0?'#ef5350':swap>0?'#8888ff':'#444') + '">' + (swap!==0 ? ((swap>0?'+':'')+swap.toFixed(2)) : '—') + '</td>'
+      + '<td style="font-size:10px;color:' + (swap<0?'#ef5350':swap>0?'#8888ff':'var(--faint2)') + '">' + (swap!==0 ? ((swap>0?'+':'')+swap.toFixed(2)) : '—') + '</td>'
       + '<td>' + rl + '</td>'
       + '</tr>';
   }).join('');
@@ -4489,27 +4548,27 @@ function _renderBpFinansTable(el) {
   var rows = '';
   var log = (typeof finlog !== 'undefined' && Array.isArray(finlog)) ? finlog : [];
   if(!log.length) {
-    rows = '<tr><td colspan="4" style="padding:24px;text-align:center;color:#777;font-size:11px;">Henüz finansal işlem yok</td></tr>';
+    rows = '<tr><td colspan="4" style="padding:24px;text-align:center;color:var(--faint);font-size:11px;">Henüz finansal işlem yok</td></tr>';
   } else {
     var sorted = log.slice().sort(function(a,b){ return parseFinlogDate(b.date) - parseFinlogDate(a.date); });
     sorted.forEach(function(l) {
       var rawAmt = parseFloat(l.amount||0);
       var sign = (l.type==='deposit'||l.type==='bonus_in') ? '+' : (l.type==='swap' ? (rawAmt>=0?'+':'-') : '-');
-      var color = cl[l.type]||'#888';
-      rows += '<tr style="border-bottom:1px solid #1a1a1a;">'
-        + '<td style="padding:6px 12px;color:#b0b0b0;font-size:10px;">' + (l.date ? fmtDate(l.date) : '—') + '</td>'
+      var color = cl[l.type]||'var(--faint)';
+      rows += '<tr style="border-bottom:1px solid var(--panel);">'
+        + '<td style="padding:6px 12px;color:var(--muted);font-size:10px;">' + (l.date ? fmtDate(l.date) : '—') + '</td>'
         + '<td style="padding:6px 12px;color:'+color+';font-weight:700;font-size:11px;">' + (tp[l.type]||l.type) + '</td>'
         + '<td style="padding:6px 12px;color:'+color+';font-weight:700;font-size:12px;text-align:right;">' + sign + '$' + Math.abs(rawAmt).toFixed(2) + '</td>'
-        + '<td style="padding:6px 12px;color:#b0b0b0;font-size:10px;">' + (l.note||'—') + '</td>'
+        + '<td style="padding:6px 12px;color:var(--muted);font-size:10px;">' + (l.note||'—') + '</td>'
         + '</tr>';
     });
   }
   el.innerHTML = '<table style="width:100%;border-collapse:collapse;">'
-    + '<thead><tr style="background:#181818;position:sticky;top:0;z-index:1;">'
-    + '<th style="padding:7px 12px;text-align:left;color:#b0b0b0;font-size:9px;font-weight:600;border-bottom:1px solid #222;letter-spacing:1px;">TARİH</th>'
-    + '<th style="padding:7px 12px;text-align:left;color:#b0b0b0;font-size:9px;font-weight:600;border-bottom:1px solid #222;letter-spacing:1px;">TİP</th>'
-    + '<th style="padding:7px 12px;text-align:right;color:#b0b0b0;font-size:9px;font-weight:600;border-bottom:1px solid #222;letter-spacing:1px;">MİKTAR</th>'
-    + '<th style="padding:7px 12px;text-align:left;color:#b0b0b0;font-size:9px;font-weight:600;border-bottom:1px solid #222;letter-spacing:1px;">NOT</th>'
+    + '<thead><tr style="background:var(--panel2);position:sticky;top:0;z-index:1;">'
+    + '<th style="padding:7px 12px;text-align:left;color:var(--muted);font-size:9px;font-weight:600;border-bottom:1px solid var(--panel2);letter-spacing:1px;">TARİH</th>'
+    + '<th style="padding:7px 12px;text-align:left;color:var(--muted);font-size:9px;font-weight:600;border-bottom:1px solid var(--panel2);letter-spacing:1px;">TİP</th>'
+    + '<th style="padding:7px 12px;text-align:right;color:var(--muted);font-size:9px;font-weight:600;border-bottom:1px solid var(--panel2);letter-spacing:1px;">MİKTAR</th>'
+    + '<th style="padding:7px 12px;text-align:left;color:var(--muted);font-size:9px;font-weight:600;border-bottom:1px solid var(--panel2);letter-spacing:1px;">NOT</th>'
     + '</tr></thead>'
     + '<tbody>' + rows + '</tbody>'
     + '</table>';
@@ -5301,27 +5360,27 @@ function renderWalletHistory() {
     var cl = {deposit:'#2979ff',withdraw:'#ef5350',bonus_in:'#f5c518',bonus_out:'#f5a623'};
     var rows = '';
     if(!log || !log.length) {
-      rows = '<tr><td colspan="4" style="padding:24px;text-align:center;color:#777;font-family:var(--mono);font-size:11px;">Henüz işlem yok</td></tr>';
+      rows = '<tr><td colspan="4" style="padding:24px;text-align:center;color:var(--faint);font-family:var(--mono);font-size:11px;">Henüz işlem yok</td></tr>';
     } else {
       var sorted = log.slice().sort(function(a,b){ return parseFinlogDate(b.date) - parseFinlogDate(a.date); });
       sorted.forEach(function(l) {
         var sign  = (l.type==='deposit'||l.type==='bonus_in') ? '+' : '-';
-        var color = cl[l.type]||'#888';
-        rows += '<tr style="border-bottom:1px solid #1a1a1a;">'
-          + '<td style="padding:8px 10px;font-family:var(--mono);font-size:10px;color:#c0c0c0;">' + (l.date ? fmtDate(l.date) : '—') + '</td>'
+        var color = cl[l.type]||'var(--faint)';
+        rows += '<tr style="border-bottom:1px solid var(--panel);">'
+          + '<td style="padding:8px 10px;font-family:var(--mono);font-size:10px;color:var(--text);">' + (l.date ? fmtDate(l.date) : '—') + '</td>'
           + '<td style="padding:8px 10px;font-family:var(--mono);font-size:11px;color:'+color+';font-weight:700;">' + (tp[l.type]||l.type) + '</td>'
           + '<td style="padding:8px 10px;font-family:var(--mono);font-size:12px;color:'+color+';font-weight:700;text-align:right;">' + sign + '$' + parseFloat(l.amount||0).toFixed(2) + '</td>'
-          + '<td style="padding:8px 10px;font-family:var(--mono);font-size:10px;color:#b0b0b0;">' + (l.note||'—') + '</td>'
+          + '<td style="padding:8px 10px;font-family:var(--mono);font-size:10px;color:var(--muted);">' + (l.note||'—') + '</td>'
           + '</tr>';
       });
     }
     el.innerHTML = '<div style="padding:4px 0;">'
       + '<table style="width:100%;border-collapse:collapse;">'
-      + '<thead><tr style="background:#181818;">'
-      + '<th style="padding:8px 10px;font-family:var(--mono);font-size:9px;color:#c0c0c0;text-align:left;border-bottom:1px solid #222;">TARİH</th>'
-      + '<th style="padding:8px 10px;font-family:var(--mono);font-size:9px;color:#c0c0c0;text-align:left;border-bottom:1px solid #222;">TİP</th>'
-      + '<th style="padding:8px 10px;font-family:var(--mono);font-size:9px;color:#c0c0c0;text-align:right;border-bottom:1px solid #222;">MİKTAR</th>'
-      + '<th style="padding:8px 10px;font-family:var(--mono);font-size:9px;color:#c0c0c0;text-align:left;border-bottom:1px solid #222;">NOT</th>'
+      + '<thead><tr style="background:var(--panel2);">'
+      + '<th style="padding:8px 10px;font-family:var(--mono);font-size:9px;color:var(--text);text-align:left;border-bottom:1px solid var(--panel2);">TARİH</th>'
+      + '<th style="padding:8px 10px;font-family:var(--mono);font-size:9px;color:var(--text);text-align:left;border-bottom:1px solid var(--panel2);">TİP</th>'
+      + '<th style="padding:8px 10px;font-family:var(--mono);font-size:9px;color:var(--text);text-align:right;border-bottom:1px solid var(--panel2);">MİKTAR</th>'
+      + '<th style="padding:8px 10px;font-family:var(--mono);font-size:9px;color:var(--text);text-align:left;border-bottom:1px solid var(--panel2);">NOT</th>'
       + '</tr></thead>'
       + '<tbody>' + rows + '</tbody>'
       + '</table></div>';
@@ -5329,7 +5388,7 @@ function renderWalletHistory() {
 
   // Taze veri Firebase'den çek
   if(_cu && _cu.id && typeof fbLoadUserData === 'function') {
-    el.innerHTML = '<div style="padding:24px;text-align:center;color:#b0b0b0;font-size:11px;">Yükleniyor...</div>';
+    el.innerHTML = '<div style="padding:24px;text-align:center;color:var(--muted);font-size:11px;">Yükleniyor...</div>';
     fbLoadUserData(_cu.id, function(data) {
       if(data && Array.isArray(data.finlog)) finlog = data.finlog;
       _doRender(finlog || []);
@@ -5746,14 +5805,28 @@ function _mwBuildRowHtml(it2, gid) {
   if(spd.endsWith('.0')) spd = spd.slice(0,-2);
   var rowCls = (it2.sym===curSym) ? 'mw-row active-sym' : 'mw-row';
   var html = '<div id="mwr-' + it2.sym + '" class="' + rowCls + '" data-sym="' + it2.sym + '" data-gid="' + gid + '" onclick="mwSelect(this.dataset.sym,this.dataset.gid)">';
-  var _ico = (it2.icon && it2.icon.trim() && it2.icon.trim().length <= 2) ? it2.icon.trim() : '';
+  var _ico = (it2.icon && it2.icon.trim() && Array.from(it2.icon.trim()).length <= 2) ? it2.icon.trim() : '';
   var _dot_color = it2.color || '#f0b90b';
   var _isFav = !!_txFavorites[it2.sym];
   var _favTitle = _isFav ? 'Favorilerden çıkar' : 'Favorilere ekle';
   var _favOnclick = "event.stopPropagation(); txToggleFavorite('" + it2.sym + "')";
+  if (gid === 'bist') {
+    var _logoUrl = 'https://cdn.jsdelivr.net/gh/ahmeterenodaci/Istanbul-Stock-Exchange--BIST--including-symbols-and-logos/logos/' + it2.sym + '.png';
+    html += '<div class="mw-icon" onclick="' + _favOnclick + '" style="display:flex;align-items:center;justify-content:center;" title="' + _favTitle + '">'
+          + '<img src="' + _logoUrl + '" alt="" loading="lazy" style="width:20px;height:20px;border-radius:50%;object-fit:contain;background:#fff;border:1px solid var(--border);flex-shrink:0" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'inline-block\';">'
+          + '<span style="display:none;width:10px;height:10px;border-radius:50%;background:' + _dot_color + ';"></span>'
+          + '</div>';
+  } else if (gid === 'stocks') {
+    var _logoUrl2 = 'https://financialmodelingprep.com/image-stock/' + it2.sym + '.png';
+    html += '<div class="mw-icon" onclick="' + _favOnclick + '" style="display:flex;align-items:center;justify-content:center;" title="' + _favTitle + '">'
+          + '<img src="' + _logoUrl2 + '" alt="" loading="lazy" style="width:20px;height:20px;border-radius:50%;object-fit:contain;background:#fff;border:1px solid var(--border);flex-shrink:0" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'inline-block\';">'
+          + '<span style="display:none;width:10px;height:10px;border-radius:50%;background:' + _dot_color + ';"></span>'
+          + '</div>';
+  } else {
   html += _ico
     ? '<div class="mw-icon" onclick="' + _favOnclick + '" title="' + _favTitle + '">' + _ico + '</div>'
     : '<div class="mw-icon" onclick="' + _favOnclick + '" style="display:flex;align-items:center;justify-content:center;" title="' + _favTitle + '"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:' + _dot_color + ';"></span></div>';
+  }
   var chgVal = (mwPrices[it2.sym] && mwPrices[it2.sym].chg !== undefined) ? mwPrices[it2.sym].chg : 0;
   var chgAbs = Math.abs(chgVal).toFixed(2);
   var chgUp = chgVal >= 0;
@@ -6057,7 +6130,7 @@ if (!symConfig) {
     {sym:'USDTRY',   label:'USD/TRY',   s:'TRY',  spread:0.05,   color:'#ff9900', minLot:0.01,  active:true, contractSize:100000, margin:5, decimals:4, category:'forex'},
     {sym:'EURTRY',   label:'EUR/TRY',   s:'ETRY', spread:0.08,   color:'#cc3300', minLot:0.01,  active:true, contractSize:100000, margin:5, decimals:4, category:'forex'},
     {sym:'XAUUSD',   label:'XAU/USD',   s:'GOLD', spread:0.5,    color:'#ffd700', minLot:0.01,  active:true, contractSize:100,    margin:1, decimals:2, category:'commodity'},
-    {sym:'XAGUSD',   label:'XAG/USD',   s:'SLVR', spread:0.03,   color:'#c0c0c0', minLot:0.1,   active:true, contractSize:5000,   margin:1, decimals:3, category:'commodity'},
+    {sym:'XAGUSD',   label:'XAG/USD',   s:'SLVR', spread:0.03,   color:'var(--text)', minLot:0.1,   active:true, contractSize:5000,   margin:1, decimals:3, category:'commodity'},
     {sym:'USOIL',    label:'US OIL',    s:'OIL',  spread:0.05,   color:'#8b4513', minLot:0.1,   active:true, contractSize:1000,   margin:1, decimals:2, category:'commodity'},
     {sym:'BRTUSD',   label:'BRENT OIL', s:'BRENT',spread:0.05,   color:'#a05020', minLot:0.1,   active:true, contractSize:1000,   margin:1, decimals:2, category:'commodity'},
     {sym:'XPTUSD',   label:'XPT/USD',   s:'PLT',  spread:0.50,   color:'#d0d0d0', minLot:0.1,   active:true, contractSize:50,     margin:1, decimals:2, category:'commodity'},
@@ -6093,12 +6166,12 @@ if (!symConfig) {
     {sym:'USDTRY',label:'USD/TRY',s:'TRY',spread:0.05,color:'#ff9900',minLot:0.01,active:true,contractSize:100000,margin:5,decimals:4,category:'forex'},
     {sym:'EURTRY',label:'EUR/TRY',s:'ETRY',spread:0.08,color:'#cc3300',minLot:0.01,active:true,contractSize:100000,margin:5,decimals:4,category:'forex'},
     {sym:'XAUUSD',label:'XAU/USD',s:'GOLD',spread:0.5,color:'#ffd700',minLot:0.01,active:true,contractSize:100,margin:1,decimals:2,category:'commodity'},
-    {sym:'XAGUSD',label:'XAG/USD',s:'SLVR',spread:0.03,color:'#c0c0c0',minLot:0.1,active:true,contractSize:5000,margin:1,decimals:3,category:'commodity'},
+    {sym:'XAGUSD',label:'XAG/USD',s:'SLVR',spread:0.03,color:'var(--text)',minLot:0.1,active:true,contractSize:5000,margin:1,decimals:3,category:'commodity'},
     {sym:'USOIL',label:'US OIL',s:'OIL',spread:0.05,color:'#8b4513',minLot:0.1,active:true,contractSize:1000,margin:1,decimals:2,category:'commodity'},
 
     // Emtia (Yahoo Finance)
     {sym:'XAUUSD',label:'XAU/USD',s:'GOLD',spread:0.5,color:'#ffd700',minLot:0.01,active:true,contractSize:100,margin:1,decimals:2,category:'commodity'},
-    {sym:'XAGUSD',label:'XAG/USD',s:'SLVR',spread:0.03,color:'#c0c0c0',minLot:0.1,active:true,contractSize:5000,margin:1,decimals:3,category:'commodity'},
+    {sym:'XAGUSD',label:'XAG/USD',s:'SLVR',spread:0.03,color:'var(--text)',minLot:0.1,active:true,contractSize:5000,margin:1,decimals:3,category:'commodity'},
     {sym:'WTIUSD',label:'WTI/USD',s:'OIL',spread:0.05,color:'#8b4513',minLot:0.1,active:true,contractSize:1000,margin:1,decimals:2,category:'commodity'},
     {sym:'BRTUSD',label:'BRT/USD',s:'BOIL',spread:0.05,color:'#654321',minLot:0.1,active:true,contractSize:1000,margin:1,decimals:2,category:'commodity'},
     // Endeks (Yahoo Finance)
@@ -6786,12 +6859,12 @@ function _txRenderBrokerInfo(d) {
       if(f.link==='tel:') _hv = _hv.replace(/[^\d+]/g,'');   // tel: için boşluk/sembol temizle
       valHtml = '<a href="'+f.link+_hv+'" style="color:#f0b90b;text-decoration:none">'+val+'</a>';
     } else if(f.small) {
-      valHtml = '<span style="color:#b0b0b0;font-size:9px;line-height:1.4">'+val+'</span>';
+      valHtml = '<span style="color:var(--muted);font-size:9px;line-height:1.4">'+val+'</span>';
     } else {
-      valHtml = '<span style="color:#ccc">'+val+'</span>';
+      valHtml = '<span style="color:var(--text)">'+val+'</span>';
     }
-    return '<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:1px solid #1a1a1a;gap:8px">'
-      +'<div style="font-family:monospace;font-size:10px;color:#b0b0b0;flex-shrink:0">'+f.label+'</div>'
+    return '<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:6px 0;border-bottom:1px solid var(--panel);gap:8px">'
+      +'<div style="font-family:monospace;font-size:10px;color:var(--muted);flex-shrink:0">'+f.label+'</div>'
       +'<div style="font-family:monospace;font-size:10px;text-align:right;min-width:0;flex:1">'+valHtml+'</div>'
       +'</div>';
   }).join('');
@@ -7258,18 +7331,18 @@ function symUnpin(sym){
     </div>
     <div style="margin-bottom:12px">
       <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">MEVCUT ŞİFRE</div>
-      <input id="pwCurrent" type="password" placeholder="••••••••" style="width:100%;background:#181818;border:1px solid var(--border);border-radius:3px;padding:9px 11px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;box-sizing:border-box">
+      <input id="pwCurrent" type="password" placeholder="••••••••" style="width:100%;background:var(--panel2);border:1px solid var(--border);border-radius:3px;padding:9px 11px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;box-sizing:border-box">
     </div>
     <div style="margin-bottom:12px">
       <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">YENİ ŞİFRE</div>
-      <input id="pwNew" type="password" placeholder="••••••••" style="width:100%;background:#181818;border:1px solid var(--border);border-radius:3px;padding:9px 11px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;box-sizing:border-box">
+      <input id="pwNew" type="password" placeholder="••••••••" style="width:100%;background:var(--panel2);border:1px solid var(--border);border-radius:3px;padding:9px 11px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;box-sizing:border-box">
     </div>
     <div style="margin-bottom:20px">
       <div style="font-family:var(--mono);font-size:10px;color:var(--muted);margin-bottom:4px">YENİ ŞİFRE (TEKRAR)</div>
-      <input id="pwConfirm" type="password" placeholder="••••••••" style="width:100%;background:#181818;border:1px solid var(--border);border-radius:3px;padding:9px 11px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;box-sizing:border-box">
+      <input id="pwConfirm" type="password" placeholder="••••••••" style="width:100%;background:var(--panel2);border:1px solid var(--border);border-radius:3px;padding:9px 11px;color:var(--text);font-family:var(--mono);font-size:12px;outline:none;box-sizing:border-box">
     </div>
     <div id="pwError" style="display:none;color:var(--sell);font-size:11px;font-family:var(--mono);margin-bottom:10px"></div>
-    <button onclick="submitPwChange()" style="width:100%;padding:11px;background:var(--accent);color:#1a1a1a;border:none;border-radius:3px;font-family:var(--mono);font-size:12px;font-weight:700;cursor:pointer">ŞİFREYİ GÜNCELLE</button>
+    <button onclick="submitPwChange()" style="width:100%;padding:11px;background:var(--accent);color:var(--panel);border:none;border-radius:3px;font-family:var(--mono);font-size:12px;font-weight:700;cursor:pointer">ŞİFREYİ GÜNCELLE</button>
   </div>
 </div>
 
@@ -7384,13 +7457,13 @@ function symUnpin(sym){
     touch-action: manipulation;
     border-radius: 0;
   }
-  #mSymBtn .arr { font-size: 7px; color: #999999; }
+  #mSymBtn .arr { font-size: 7px; color: var(--muted); }
   #mSymList {
     display: none;
     position: fixed;
     top: 80px; left: 0; width: 200px;
-    background: #141414;
-    border: 1px solid #2a2a2a;
+    background: var(--bg);
+    border: 1px solid var(--border);
     border-top: none;
     border-radius: 0 0 8px 8px;
     z-index: 9500;
@@ -7402,20 +7475,20 @@ function symUnpin(sym){
   #mSymList.open { display: block; }
   #mSymList .msl-item {
     padding: 9px 12px;
-    border-bottom: 1px solid #1e1e1e;
+    border-bottom: 1px solid var(--panel);
     font-family: monospace; font-size: 11px; font-weight: 700;
-    color: #ccc; cursor: pointer;
+    color: var(--text); cursor: pointer;
     display: flex; align-items: center; gap: 8px;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
   }
-  #mSymList .msl-item:active { background: #1a1a1a; }
+  #mSymList .msl-item:active { background: var(--panel); }
   #mSymList .msl-item.active { color: #f0b90b; }
-  #mSymList .msl-item .msl-full { font-size: 10px; color: #444; font-weight: 400; }
+  #mSymList .msl-item .msl-full { font-size: 10px; color: var(--faint2); font-weight: 400; }
   #mSymList .msl-close {
     padding: 10px 16px; text-align: center;
-    font-family: monospace; font-size: 11px; color: #444;
-    border-top: 1px solid #222; cursor: pointer;
+    font-family: monospace; font-size: 11px; color: var(--faint2);
+    border-top: 1px solid var(--panel2); cursor: pointer;
     touch-action: manipulation;
   }
 
@@ -7478,8 +7551,8 @@ function symUnpin(sym){
     position: fixed;
     bottom: 0; left: 0; right: 0;
     height: 62px;
-    background: #111;
-    border-top: 1px solid #1e1e1e;
+    background: var(--bg);
+    border-top: 1px solid var(--panel);
     z-index: 8000;
     align-items: stretch;
   }
@@ -7492,7 +7565,7 @@ function symUnpin(sym){
     gap: 3px;
     background: none;
     border: none;
-    color: #aaaaaa;
+    color: var(--muted);
     font-family: 'Courier New', monospace;
     font-size: 9px;
     font-weight: 700;
@@ -7525,7 +7598,7 @@ function symUnpin(sym){
   .m-pan {
     position: fixed;
     top: 44px; left: 0; right: 0; bottom: 62px;
-    background: #0a0a0a;
+    background: var(--bg);
     z-index: 7000;
     flex-direction: column;
     overflow: hidden;
@@ -7536,7 +7609,7 @@ function symUnpin(sym){
     align-items: center;
     height: 42px;
     padding: 0 16px;
-    border-bottom: 1px solid #1a1a1a;
+    border-bottom: 1px solid var(--panel);
     flex-shrink: 0;
     font-family: monospace;
     font-size: 11px;
@@ -7559,11 +7632,11 @@ function symUnpin(sym){
     padding: 10px 14px 16px 14px !important;
     gap: 10px !important;
     min-height: 62px !important;
-    border-bottom: 1px solid #1a1a1a !important;
-    background: #0a0a0a !important;
+    border-bottom: 1px solid var(--panel) !important;
+    background: var(--bg) !important;
     overflow: visible !important;
   }
-  #mPanMarket .mw-row:active { background: #111 !important; }
+  #mPanMarket .mw-row:active { background: var(--bg) !important; }
   #mPanMarket .mw-row.active-sym { background: rgba(240,185,11,.06) !important; border-left: 3px solid #f0b90b !important; }
 
   /* İkon */
@@ -7571,18 +7644,18 @@ function symUnpin(sym){
     width: 36px; height: 36px; flex-shrink: 0;
     font-size: 20px !important;
     display: flex; align-items: center; justify-content: center;
-    background: #141414; border-radius: 50%;
+    background: var(--bg); border-radius: 50%;
   }
-  #mPanMarket .mw-icon:active { transform: scale(0.88); background: #1e1e1e; }
+  #mPanMarket .mw-icon:active { transform: scale(0.88); background: var(--panel); }
 
   /* Sembol blok */
   #mPanMarket .mw-sym-block { flex: 1; min-width: 0; }
   #mPanMarket .mw-sym-name {
     font-size: 13px !important; font-weight: 700 !important;
-    color: #e0e0e0 !important; letter-spacing: .3px;
+    color: var(--text) !important; letter-spacing: .3px;
   }
   #mPanMarket .mw-sym-full {
-    font-size: 10px !important; color: #888 !important;
+    font-size: 10px !important; color: var(--faint) !important;
     margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     max-width: 140px;
   }
@@ -7605,16 +7678,16 @@ function symUnpin(sym){
     font-family: monospace !important;
   }
   #mPanMarket .mw-bid {
-    background: rgba(200,0,0,.6);
-    color: #ff2222 !important;
-    border: 1px solid rgba(220,0,0,.9);
+    background: var(--mwbid-bg);
+    color: var(--mwbid-text) !important;
+    border: 1px solid var(--mwbid-border);
     border-radius: 8px !important;
     transition: background .4s, border-color .4s;
   }
   #mPanMarket .mw-ask {
-    background: rgba(41,121,255,.45);
-    color: #82b1ff !important;
-    border: 1px solid rgba(41,121,255,.9);
+    background: var(--mwask-bg);
+    color: var(--mwask-text) !important;
+    border: 1px solid var(--mwask-border);
     border-radius: 8px !important;
     transition: background .4s, border-color .4s;
   }
@@ -7631,9 +7704,9 @@ function symUnpin(sym){
     font-family: monospace;
     font-size: 8px;
     font-weight: 700;
-    color: #a0a0a0;
-    background: #1a1a1a;
-    border: 1px solid #333;
+    color: var(--muted);
+    background: var(--panel);
+    border: 1px solid var(--border2);
     border-radius: 20px;
     padding: 1px 6px;
     white-space: nowrap;
@@ -7644,13 +7717,13 @@ function symUnpin(sym){
   /* Grup başlığı */
   #mPanMarket .mw-group-header {
     padding: 8px 14px !important;
-    background: #0f0f0f !important;
-    border-bottom: 1px solid #1a1a1a !important;
+    background: var(--bg) !important;
+    border-bottom: 1px solid var(--panel) !important;
     position: sticky; top: 0; z-index: 1;
   }
   #mPanMarket .mw-group-title {
     font-size: 10px !important; letter-spacing: 1.5px !important;
-    color: #999999 !important;
+    color: var(--muted) !important;
   }
 
   /* Değişim yüzdesi badge */
@@ -7668,10 +7741,10 @@ function symUnpin(sym){
 
   /* Arama kutusu */
   #mSrch {
-    background: #111 !important;
-    border: 1px solid #1e1e1e !important;
+    background: var(--bg) !important;
+    border: 1px solid var(--panel) !important;
     border-radius: 10px !important;
-    color: #ccc !important;
+    color: var(--text) !important;
     font-size: 13px !important;
   }
 
@@ -7681,7 +7754,7 @@ function symUnpin(sym){
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 1px;
-    background: #1a1a1a;
+    background: var(--panel);
     flex-shrink: 0;
   }
   .m-side {
@@ -7689,55 +7762,55 @@ function symUnpin(sym){
     flex-direction: column;
     align-items: center;
     padding: 14px 8px;
-    background: #0a0a0a;
+    background: var(--bg);
     cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     gap: 3px;
   }
-  .m-side:active { background: #111; }
-  .m-slbl { font-family: monospace; font-size: 9px; color: #a0a0a0; letter-spacing: 1px; }
+  .m-side:active { background: var(--bg); }
+  .m-slbl { font-family: monospace; font-size: 9px; color: var(--muted); letter-spacing: 1px; }
   .m-sprc { font-family: monospace; font-size: 28px; font-weight: 700; }
   .m-side.sell .m-sprc { color: #ef5350; }
   .m-side.buy  .m-sprc { color: #2979ff; }
   .m-tbody { padding: 14px; display: flex; flex-direction: column; gap: 14px; }
   .m-lot {
     display: flex;
-    background: #111;
-    border: 1px solid #1e1e1e;
+    background: var(--bg);
+    border: 1px solid var(--panel);
     border-radius: 8px;
     overflow: hidden;
   }
   .m-lb {
     width: 52px; height: 52px;
-    background: #181818;
-    border: none; color: #aaa;
+    background: var(--panel2);
+    border: none; color: var(--muted);
     font-size: 26px; cursor: pointer;
     -webkit-tap-highlight-color: transparent;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
   }
-  .m-lb:active { background: #222; }
+  .m-lb:active { background: var(--panel2); }
   .m-li {
     flex: 1; text-align: center;
     background: transparent; border: none;
-    color: #e0e0e0; font-family: monospace;
+    color: var(--text); font-family: monospace;
     font-size: 20px; font-weight: 700; height: 52px;
   }
   .m-li:focus { outline: none; }
   .m-prs { display: flex; gap: 8px; flex-wrap: wrap; }
   .m-pr {
     padding: 5px 13px; border-radius: 20px;
-    border: 1px solid #2a2a2a; background: #111;
-    color: #a0a0a0; font-family: monospace; font-size: 11px;
+    border: 1px solid var(--border); background: var(--bg);
+    color: var(--muted); font-family: monospace; font-size: 11px;
     cursor: pointer; -webkit-tap-highlight-color: transparent;
   }
-  .m-pr.on { border-color: #2979ff; color: #2979ff; background: #0a1a2a; }
+  .m-pr.on { border-color: #2979ff; color: #2979ff; background: var(--buy-dim); }
   .m-sltp { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .m-ig { display: flex; flex-direction: column; gap: 4px; }
-  .m-il { font-family: monospace; font-size: 9px; color: #a0a0a0; letter-spacing: .5px; }
+  .m-il { font-family: monospace; font-size: 9px; color: var(--muted); letter-spacing: .5px; }
   .m-in {
-    background: #111; border: 1px solid #2a2a2a;
-    border-radius: 6px; color: #ddd;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text);
     font-family: monospace; font-size: 14px;
     padding: 10px 12px; width: 100%; box-sizing: border-box;
   }
@@ -7745,29 +7818,29 @@ function symUnpin(sym){
   .m-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
   .m-bs {
     padding: 16px; border-radius: 10px;
-    border: 2px solid #ef5350; background: #140505;
+    border: 2px solid #ef5350; background: var(--sell-dim);
     color: #ef5350; font-family: monospace;
     font-size: 17px; font-weight: 700; cursor: pointer;
     -webkit-tap-highlight-color: transparent;
   }
-  .m-bs:active { background: #1f0707; }
+  .m-bs:active { background: var(--sell-dim); filter:brightness(0.9); }
   .m-bb {
     padding: 16px; border-radius: 10px;
-    border: 2px solid #2979ff; background: #051410;
+    border: 2px solid #2979ff; background: var(--buy-dim);
     color: #2979ff; font-family: monospace;
     font-size: 17px; font-weight: 700; cursor: pointer;
     -webkit-tap-highlight-color: transparent;
   }
-  .m-bb:active { background: #081f18; }
+  .m-bb:active { background: var(--buy-dim); filter:brightness(0.9); }
 
   /* ── Pozisyonlar ── */
   .m-tabs {
-    display: flex; border-bottom: 1px solid #1a1a1a; flex-shrink: 0;
+    display: flex; border-bottom: 1px solid var(--panel); flex-shrink: 0;
   }
   .m-tab {
     flex: 1; padding: 10px; text-align: center;
     font-family: monospace; font-size: 11px; font-weight: 700;
-    color: #a0a0a0; background: none; border: none;
+    color: var(--muted); background: none; border: none;
     border-bottom: 2px solid transparent; cursor: pointer;
     -webkit-tap-highlight-color: transparent;
   }
@@ -7775,61 +7848,61 @@ function symUnpin(sym){
   .m-plist { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
   .m-empty {
     display: flex; align-items: center; justify-content: center;
-    height: 100px; color: #2a2a2a;
+    height: 100px; color: var(--border);
     font-family: monospace; font-size: 12px;
   }
   .m-card {
-    padding: 12px 14px; border-bottom: 1px solid #141414;
+    padding: 12px 14px; border-bottom: 1px solid var(--bg);
     display: flex; align-items: center; gap: 10px;
   }
-  .m-card:active { background: #111; }
+  .m-card:active { background: var(--bg); }
   .m-cl { flex: 1; }
   .m-csym {
     font-family: monospace; font-size: 13px; font-weight: 700;
-    color: #ccc; display: flex; align-items: center; gap: 6px;
+    color: var(--text); display: flex; align-items: center; gap: 6px;
   }
   .m-bdg {
     font-size: 9px; font-weight: 700; padding: 2px 6px; border-radius: 3px;
   }
-  .m-bdg.b { background: #081a14; color: #2979ff; }
-  .m-bdg.s { background: #1a0808; color: #ef5350; }
-  .m-cmeta { font-family: monospace; font-size: 10px; color: #999; margin-top: 2px; }
+  .m-bdg.b { background: var(--buy-dim); color: #2979ff; }
+  .m-bdg.s { background: var(--sell-dim); color: #ef5350; }
+  .m-cmeta { font-family: monospace; font-size: 10px; color: var(--muted); margin-top: 2px; }
   .m-cr { text-align: right; }
   .m-cpnl { font-family: monospace; font-size: 14px; font-weight: 700; }
   .m-cpnl.u { color: #2979ff; }
   .m-cpnl.d { color: #ef5350; }
-  .m-ccur { font-family: monospace; font-size: 10px; color: #999; margin-top: 2px; }
+  .m-ccur { font-family: monospace; font-size: 10px; color: var(--muted); margin-top: 2px; }
   .m-cx {
     width: 32px; height: 32px; flex-shrink: 0;
-    background: #111; border: 1px solid #1e1e1e;
-    border-radius: 6px; color: #333; font-size: 14px;
+    background: var(--bg); border: 1px solid var(--panel);
+    border-radius: 6px; color: var(--faint2); font-size: 14px;
     cursor: pointer; display: flex; align-items: center; justify-content: center;
     -webkit-tap-highlight-color: transparent;
   }
-  .m-cx:active { background: #1a0808; border-color: #ef5350; color: #ef5350; }
+  .m-cx:active { background: var(--sell-dim); border-color: #ef5350; color: #ef5350; }
 
   /* ── Hesap ── */
   #mPanAcc { overflow-y: auto; -webkit-overflow-scrolling: touch; }
   .m-stats {
     display: grid; grid-template-columns: 1fr 1fr;
-    gap: 1px; background: #1a1a1a;
+    gap: 1px; background: var(--panel);
     margin: 12px; border-radius: 10px; overflow: hidden;
   }
-  .m-stat { background: #0f0f0f; padding: 14px 16px; }
-  .m-stl { font-family: monospace; font-size: 9px; color: #d4d4d4; text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
-  .m-stv { font-family: monospace; font-size: 16px; font-weight: 700; color: #bbb; }
+  .m-stat { background: var(--bg); padding: 14px 16px; }
+  .m-stl { font-family: monospace; font-size: 9px; color: var(--text); text-transform: uppercase; letter-spacing: .5px; margin-bottom: 4px; }
+  .m-stv { font-family: monospace; font-size: 16px; font-weight: 700; color: var(--muted); }
   .m-acts { padding: 0 12px 12px; display: flex; flex-direction: column; gap: 8px; }
   .m-abt {
     padding: 14px 16px; border-radius: 10px;
-    border: 1px solid #1e1e1e; background: #111;
-    color: #bbb; font-family: monospace; font-size: 13px; font-weight: 600;
+    border: 1px solid var(--panel); background: var(--bg);
+    color: var(--muted); font-family: monospace; font-size: 13px; font-weight: 600;
     text-align: left; cursor: pointer;
     display: flex; align-items: center; gap: 12px;
     -webkit-tap-highlight-color: transparent;
     touch-action: manipulation;
     transition: background .15s;
   }
-  .m-abt:active { background: #1a1a1a; }
+  .m-abt:active { background: var(--panel); }
   .m-aic { font-size: 18px; }
 }
 </style>
@@ -7837,11 +7910,11 @@ function symUnpin(sym){
 <!-- Paneller + Nav HTML -->
 <div id="mPanMarket" class="m-pan">
   <div style="padding:10px 12px;flex-shrink:0;position:relative">
-    <input id="mSrch" style="width:100%;padding:11px 16px 11px 40px;font-size:14px;border-radius:10px;background:#181818;border:1px solid #1e1e1e;color:#ddd;box-sizing:border-box;font-family:monospace" placeholder="Sembol ara..." oninput="mwFilter(this.value)">
+    <input id="mSrch" style="width:100%;padding:11px 16px 11px 40px;font-size:14px;border-radius:10px;background:var(--panel2);border:1px solid var(--panel);color:var(--text);box-sizing:border-box;font-family:monospace" placeholder="Sembol ara..." oninput="mwFilter(this.value)">
     <span style="position:absolute;left:24px;top:50%;transform:translateY(-50%);pointer-events:none;display:flex;align-items:center"><svg style="width:15px;height:15px;opacity:.5;flex-shrink:0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35"/></svg></span>
   </div>
-  <div style="display:flex;align-items:center;padding:6px 14px;flex-shrink:0;border-bottom:1px solid #1a1a1a;">
-    <div style="flex:1;font-family:monospace;font-size:9px;color:#333;letter-spacing:1px;text-transform:uppercase">Sembol</div>
+  <div style="display:flex;align-items:center;padding:6px 14px;flex-shrink:0;border-bottom:1px solid var(--panel);">
+    <div style="flex:1;font-family:monospace;font-size:9px;color:var(--faint2);letter-spacing:1px;text-transform:uppercase">Sembol</div>
     <div style="width:72px;text-align:center;font-family:monospace;font-size:9px;color:#ef5350;letter-spacing:.5px">SAT</div>
     <div style="width:72px;text-align:center;font-family:monospace;font-size:9px;color:#2979ff;letter-spacing:.5px;margin-left:6px">AL</div>
   </div>
@@ -7851,13 +7924,13 @@ function symUnpin(sym){
 <div id="mPanTrade" class="m-pan">
   <div class="m-phead" style="justify-content:space-between">
     <span id="mTSym">—</span>
-    <span style="color:#1e1e1e;font-size:10px" id="mTSpr">—</span>
+    <span style="color:var(--panel);font-size:10px" id="mTSpr">—</span>
   </div>
   <div style="padding:8px 14px 0;flex-shrink:0;position:relative">
     <input id="mOtSymSearch" type="text" placeholder="Sembol ara..."
-      style="width:100%;padding:9px 14px;background:#181818;border:1px solid #1e1e1e;border-radius:8px;color:#ddd;font-family:monospace;font-size:13px;outline:none;box-sizing:border-box"
+      style="width:100%;padding:9px 14px;background:var(--panel2);border:1px solid var(--panel);border-radius:8px;color:var(--text);font-family:monospace;font-size:13px;outline:none;box-sizing:border-box"
       oninput="otSymFilter(this.value,'mob')" onfocus="otSymFilter(this.value,'mob')" autocomplete="off">
-    <div id="mOtSymList" style="display:none;position:absolute;left:14px;right:14px;top:100%;background:#141414;border:1px solid #2a2a2a;border-radius:0 0 8px 8px;max-height:200px;overflow-y:auto;z-index:9600"></div>
+    <div id="mOtSymList" style="display:none;position:absolute;left:14px;right:14px;top:100%;background:var(--bg);border:1px solid var(--border);border-radius:0 0 8px 8px;max-height:200px;overflow-y:auto;z-index:9600"></div>
   </div>
   <div class="m-prices">
     <div class="m-side sell" style="cursor:default">
@@ -7872,7 +7945,7 @@ function symUnpin(sym){
   <div class="m-tbody">
     <!-- Emir tipi seçimi -->
     <div id="mOrdTypeRow">
-      <div style="font-family:monospace;font-size:9px;color:#c0c0c0;letter-spacing:.5px;margin-bottom:6px">EMİR TİPİ</div>
+      <div style="font-family:monospace;font-size:9px;color:var(--text);letter-spacing:.5px;margin-bottom:6px">EMİR TİPİ</div>
       <div style="display:flex;flex-wrap:wrap;gap:6px">
         <button class="m-pr on" data-type="market" onclick="setOrdType('market',null);mOrdTypeBtn(this)">Market</button>
         <button class="m-pr" data-type="buy_limit" onclick="setOrdType('buy_limit',null);mOrdTypeBtn(this)">Buy Limit</button>
@@ -7889,7 +7962,7 @@ function symUnpin(sym){
       </div>
     </div>
     <div>
-      <div style="font-family:monospace;font-size:9px;color:#c0c0c0;letter-spacing:.5px;margin-bottom:6px">LOT MİKTARI</div>
+      <div style="font-family:monospace;font-size:9px;color:var(--text);letter-spacing:.5px;margin-bottom:6px">LOT MİKTARI</div>
       <div class="m-lot">
         <button class="m-lb" onclick="mLA(-1)">−</button>
         <input class="m-li" id="mLI" type="number" value="0.01" step="0.01" min="0.01">
@@ -7917,8 +7990,8 @@ function symUnpin(sym){
   position:fixed;
   bottom:62px; left:0; right:0;
   height:52px;
-  background:#181818;
-  border-top:1px solid #1a1a1a;
+  background:var(--panel2);
+  border-top:1px solid var(--panel);
   z-index:7500;
   display:none;
   align-items:stretch;
@@ -7927,69 +8000,69 @@ function symUnpin(sym){
   <button onclick="mQOrd('sell')" style="
     flex:1; background:rgba(239,83,80,.15); border:none;
     color:#ef5350; font-family:monospace; font-size:13px; font-weight:700;
-    border-right:1px solid #1a1a1a; cursor:pointer;
+    border-right:1px solid var(--panel); cursor:pointer;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
     gap:1px; -webkit-tap-highlight-color:transparent;
   ">
-    <span style="font-size:9px;color:#c0c0c0;letter-spacing:.5px;pointer-events:none">SAT</span>
+    <span style="font-size:9px;color:var(--text);letter-spacing:.5px;pointer-events:none">SAT</span>
     <span id="mqBid" style="pointer-events:none">—</span>
   </button>
   <div style="
     width:110px; flex-shrink:0;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
-    gap:2px; background:#151515;
-    border-left:1px solid #1a1a1a; border-right:1px solid #1a1a1a;
+    gap:2px; background:var(--bg);
+    border-left:1px solid var(--panel); border-right:1px solid var(--panel);
   ">
-    <div style="font-family:monospace;font-size:8px;color:#a0a0a0;letter-spacing:.5px">LOT</div>
+    <div style="font-family:monospace;font-size:8px;color:var(--muted);letter-spacing:.5px">LOT</div>
     <div style="display:flex;align-items:center;gap:6px">
-      <button onclick="mQLA(-1)" style="width:26px;height:26px;background:#181818;border:1px solid #2a2a2a;color:#a0a0a0;font-size:16px;cursor:pointer;border-radius:4px;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;touch-action:manipulation;flex-shrink:0">−</button>
-      <span id="mqLot" style="font-family:monospace;font-size:11px;font-weight:700;color:#ddd;min-width:34px;text-align:center;display:inline-block">0.01</span>
-      <button onclick="mQLA(1)" style="width:26px;height:26px;background:#181818;border:1px solid #2a2a2a;color:#a0a0a0;font-size:16px;cursor:pointer;border-radius:4px;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;touch-action:manipulation;flex-shrink:0">+</button>
+      <button onclick="mQLA(-1)" style="width:26px;height:26px;background:var(--panel2);border:1px solid var(--border);color:var(--muted);font-size:16px;cursor:pointer;border-radius:4px;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;touch-action:manipulation;flex-shrink:0">−</button>
+      <span id="mqLot" style="font-family:monospace;font-size:11px;font-weight:700;color:var(--text);min-width:34px;text-align:center;display:inline-block">0.01</span>
+      <button onclick="mQLA(1)" style="width:26px;height:26px;background:var(--panel2);border:1px solid var(--border);color:var(--muted);font-size:16px;cursor:pointer;border-radius:4px;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent;touch-action:manipulation;flex-shrink:0">+</button>
     </div>
   </div>
   <button onclick="mQOrd('buy')" style="
     flex:1; background:rgba(38,166,154,.15); border:none;
     color:#2979ff; font-family:monospace; font-size:13px; font-weight:700;
-    border-left:1px solid #1a1a1a; cursor:pointer;
+    border-left:1px solid var(--panel); cursor:pointer;
     display:flex; flex-direction:column; align-items:center; justify-content:center;
     gap:1px; -webkit-tap-highlight-color:transparent;
   ">
-    <span style="font-size:9px;color:#c0c0c0;letter-spacing:.5px;pointer-events:none">AL</span>
+    <span style="font-size:9px;color:var(--text);letter-spacing:.5px;pointer-events:none">AL</span>
     <span id="mqAsk" style="pointer-events:none">—</span>
   </button>
 </div>
 
 <div id="mPanPos" class="m-pan">
   <!-- Açık K/Z büyük -->
-  <div style="padding:18px 16px 12px;border-bottom:1px solid #1a1a1a;flex-shrink:0;text-align:center">
-    <div style="font-family:monospace;font-size:10px;color:#a0a0a0;letter-spacing:1px;margin-bottom:6px" data-lang="openPnl">AÇIK KAR / ZARAR</div>
+  <div style="padding:18px 16px 12px;border-bottom:1px solid var(--panel);flex-shrink:0;text-align:center">
+    <div style="font-family:monospace;font-size:10px;color:var(--muted);letter-spacing:1px;margin-bottom:6px" data-lang="openPnl">AÇIK KAR / ZARAR</div>
     <div id="mPSPnl" style="font-family:monospace;font-size:28px;font-weight:700;color:#2979ff">—</div>
   </div>
 
   <!-- Hesap listesi -->
-  <div style="border-bottom:1px solid #1a1a1a;flex-shrink:0">
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 16px;border-bottom:1px solid #111">
-      <div style="font-family:monospace;font-size:12px;color:#999" data-lang="balance">Bakiye</div>
-      <div style="font-family:monospace;font-size:12px;font-weight:700;color:#ccc" id="mPSBal">—</div>
+  <div style="border-bottom:1px solid var(--panel);flex-shrink:0">
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 16px;border-bottom:1px solid var(--bg)">
+      <div style="font-family:monospace;font-size:12px;color:var(--muted)" data-lang="balance">Bakiye</div>
+      <div style="font-family:monospace;font-size:12px;font-weight:700;color:var(--text)" id="mPSBal">—</div>
     </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 16px;border-bottom:1px solid #111">
-      <div style="font-family:monospace;font-size:12px;color:#999" data-lang="equity">Varlık</div>
-      <div style="font-family:monospace;font-size:12px;font-weight:700;color:#ccc" id="mPSEq">—</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 16px;border-bottom:1px solid var(--bg)">
+      <div style="font-family:monospace;font-size:12px;color:var(--muted)" data-lang="equity">Varlık</div>
+      <div style="font-family:monospace;font-size:12px;font-weight:700;color:var(--text)" id="mPSEq">—</div>
     </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 16px;border-bottom:1px solid #111" id="mPosBonusRow">
-      <div style="font-family:monospace;font-size:12px;color:#999" data-lang="bonus">Bonus</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 16px;border-bottom:1px solid var(--bg)" id="mPosBonusRow">
+      <div style="font-family:monospace;font-size:12px;color:var(--muted)" data-lang="bonus">Bonus</div>
       <div style="font-family:monospace;font-size:12px;font-weight:700;color:#f5c518" id="mPSBon">—</div>
     </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 16px;border-bottom:1px solid #111">
-      <div style="font-family:monospace;font-size:11px;color:#999">Teminat</div>
-      <div style="font-family:monospace;font-size:12px;font-weight:700;color:#ccc" id="mPSMar">—</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 16px;border-bottom:1px solid var(--bg)">
+      <div style="font-family:monospace;font-size:11px;color:var(--muted)">Teminat</div>
+      <div style="font-family:monospace;font-size:12px;font-weight:700;color:var(--text)" id="mPSMar">—</div>
     </div>
-    <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 16px;border-bottom:1px solid #111">
-      <div style="font-family:monospace;font-size:11px;color:#999">Serbest Teminat</div>
-      <div style="font-family:monospace;font-size:12px;font-weight:700;color:#ccc" id="mPSFr">—</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 16px;border-bottom:1px solid var(--bg)">
+      <div style="font-family:monospace;font-size:11px;color:var(--muted)">Serbest Teminat</div>
+      <div style="font-family:monospace;font-size:12px;font-weight:700;color:var(--text)" id="mPSFr">—</div>
     </div>
     <div style="display:flex;align-items:center;justify-content:space-between;padding:7px 16px">
-      <div style="font-family:monospace;font-size:11px;color:#999">Teminat Seviyesi</div>
+      <div style="font-family:monospace;font-size:11px;color:var(--muted)">Teminat Seviyesi</div>
       <div style="font-family:monospace;font-size:12px;font-weight:700;color:#2979ff" id="mPSML">—</div>
     </div>
   </div>
@@ -8005,14 +8078,14 @@ function symUnpin(sym){
 
 <div id="mPanAcc" class="m-pan">
   <!-- Üst: Hesap başlığı + login -->
-  <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid #1a1a1a;flex-shrink:0">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid var(--panel);flex-shrink:0">
     <div style="font-family:monospace;font-size:11px;font-weight:700;color:#2979ff;letter-spacing:1px" data-lang="myAccount">HESABIM</div>
-    <div style="font-family:monospace;font-size:10px;color:#888" id="mALg">—</div>
+    <div style="font-family:monospace;font-size:10px;color:var(--faint)" id="mALg">—</div>
   </div>
 
   <!-- Açık K/Z - büyük göster -->
-  <div style="padding:10px 16px 8px;border-bottom:1px solid #1a1a1a;flex-shrink:0;text-align:center">
-    <div style="font-family:monospace;font-size:9px;color:#a0a0a0;letter-spacing:1px;margin-bottom:4px" data-lang="openPnl">AÇIK KAR / ZARAR</div>
+  <div style="padding:10px 16px 8px;border-bottom:1px solid var(--panel);flex-shrink:0;text-align:center">
+    <div style="font-family:monospace;font-size:9px;color:var(--muted);letter-spacing:1px;margin-bottom:4px" data-lang="openPnl">AÇIK KAR / ZARAR</div>
     <div id="mSPnl" style="font-family:monospace;font-size:22px;font-weight:700;color:#2979ff">—</div>
   </div>
 
@@ -8020,33 +8093,33 @@ function symUnpin(sym){
   <div style="flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch">
     <div style="padding:0 0 8px">
       <!-- Bakiye -->
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid #111">
-        <div style="font-family:monospace;font-size:11px;color:#999">Bakiye</div>
-        <div style="font-family:monospace;font-size:12px;font-weight:700;color:#ccc" id="mSBal">—</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid var(--bg)">
+        <div style="font-family:monospace;font-size:11px;color:var(--muted)">Bakiye</div>
+        <div style="font-family:monospace;font-size:12px;font-weight:700;color:var(--text)" id="mSBal">—</div>
       </div>
       <!-- Varlık -->
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid #111">
-        <div style="font-family:monospace;font-size:11px;color:#999">Varlık</div>
-        <div style="font-family:monospace;font-size:12px;font-weight:700;color:#ccc" id="mSEq">—</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid var(--bg)">
+        <div style="font-family:monospace;font-size:11px;color:var(--muted)">Varlık</div>
+        <div style="font-family:monospace;font-size:12px;font-weight:700;color:var(--text)" id="mSEq">—</div>
       </div>
       <!-- Bonus -->
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid #111" id="mAccBonusRow">
-        <div style="font-family:monospace;font-size:11px;color:#999">Bonus</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid var(--bg)" id="mAccBonusRow">
+        <div style="font-family:monospace;font-size:11px;color:var(--muted)">Bonus</div>
         <div style="font-family:monospace;font-size:12px;font-weight:700;color:#f5c518" id="mSBon">—</div>
       </div>
       <!-- Teminat -->
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid #111">
-        <div style="font-family:monospace;font-size:11px;color:#999" data-lang="margin">Teminat</div>
-        <div style="font-family:monospace;font-size:12px;font-weight:700;color:#ccc" id="mSMar">—</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid var(--bg)">
+        <div style="font-family:monospace;font-size:11px;color:var(--muted)" data-lang="margin">Teminat</div>
+        <div style="font-family:monospace;font-size:12px;font-weight:700;color:var(--text)" id="mSMar">—</div>
       </div>
       <!-- Serbest Teminat -->
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid #111">
-        <div style="font-family:monospace;font-size:11px;color:#999" data-lang="freeMargin">Serbest Teminat</div>
-        <div style="font-family:monospace;font-size:12px;font-weight:700;color:#ccc" id="mSFr">—</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid var(--bg)">
+        <div style="font-family:monospace;font-size:11px;color:var(--muted)" data-lang="freeMargin">Serbest Teminat</div>
+        <div style="font-family:monospace;font-size:12px;font-weight:700;color:var(--text)" id="mSFr">—</div>
       </div>
       <!-- Teminat Seviyesi -->
-      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid #111">
-        <div style="font-family:monospace;font-size:11px;color:#999" data-lang="marginLvl">Teminat Seviyesi</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:8px 16px;border-bottom:1px solid var(--bg)">
+        <div style="font-family:monospace;font-size:11px;color:var(--muted)" data-lang="marginLvl">Teminat Seviyesi</div>
         <div style="font-family:monospace;font-size:12px;font-weight:700;color:#2979ff" id="mSML">—</div>
       </div>
     </div>
@@ -8089,16 +8162,16 @@ function symUnpin(sym){
       </button>
 
       <!-- Dil seçim paneli -->
-      <div id="mLangPanel" style="display:none;background:#0f0f0f;border:1px solid #1e1e1e;border-radius:10px;overflow:hidden">
-        <div onclick="mSetLang('tr')" style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #1a1a1a;cursor:pointer;font-family:monospace;font-size:13px;color:#bbb;-webkit-tap-highlight-color:transparent" id="mLangTR">
+      <div id="mLangPanel" style="display:none;background:var(--bg);border:1px solid var(--panel);border-radius:10px;overflow:hidden">
+        <div onclick="mSetLang('tr')" style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--panel);cursor:pointer;font-family:monospace;font-size:13px;color:var(--muted);-webkit-tap-highlight-color:transparent" id="mLangTR">
           <span style="font-size:18px">🇹🇷</span> Türkçe
           <span style="margin-left:auto;color:#2979ff;display:none" id="mLangTRCheck">✓</span>
         </div>
-        <div onclick="mSetLang('en')" style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid #1a1a1a;cursor:pointer;font-family:monospace;font-size:13px;color:#bbb;-webkit-tap-highlight-color:transparent" id="mLangEN">
+        <div onclick="mSetLang('en')" style="display:flex;align-items:center;gap:12px;padding:13px 16px;border-bottom:1px solid var(--panel);cursor:pointer;font-family:monospace;font-size:13px;color:var(--muted);-webkit-tap-highlight-color:transparent" id="mLangEN">
           <span style="font-size:18px">🇬🇧</span> English
           <span style="margin-left:auto;color:#2979ff;display:none" id="mLangENCheck">✓</span>
         </div>
-        <div onclick="mSetLang('ar')" style="display:flex;align-items:center;gap:12px;padding:13px 16px;cursor:pointer;font-family:monospace;font-size:13px;color:#bbb;-webkit-tap-highlight-color:transparent" id="mLangAR">
+        <div onclick="mSetLang('ar')" style="display:flex;align-items:center;gap:12px;padding:13px 16px;cursor:pointer;font-family:monospace;font-size:13px;color:var(--muted);-webkit-tap-highlight-color:transparent" id="mLangAR">
           <span style="font-size:18px">🇸🇦</span> العربية
           <span style="margin-left:auto;color:#2979ff;display:none" id="mLangARCheck">✓</span>
         </div>
@@ -8131,7 +8204,7 @@ function symUnpin(sym){
         Broker Bilgileri
         <svg id="mBIChevron" style="width:14px;height:14px;margin-left:auto;opacity:.4;transition:transform .2s" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18l6-6-6-6"/></svg>
       </button>
-      <div id="mBrokerInfo" style="display:none;background:#0f0f0f;border:1px solid #1e1e1e;border-radius:0 0 10px 10px;padding:12px 14px;margin-top:-6px">
+      <div id="mBrokerInfo" style="display:none;background:var(--bg);border:1px solid var(--panel);border-radius:0 0 10px 10px;padding:12px 14px;margin-top:-6px">
         <div id="mBIRows"></div>
       </div>
 
@@ -8193,6 +8266,37 @@ function symUnpin(sym){
   var _ct='market', _lot=0.01, _ptab='open';
   function mob(){ return window.innerWidth<=768; }
 
+  // ── TEMA (Açık/Koyu Mod) ──
+  var _svgSun = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4.5"></circle><path d="M12 2.5v2.2M12 19.3v2.2M4.2 4.2l1.55 1.55M18.25 18.25l1.55 1.55M2.5 12h2.2M19.3 12h2.2M4.2 19.8l1.55-1.55M18.25 5.75l1.55-1.55"></path></svg>';
+  var _svgMoon = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 14.2A8.6 8.6 0 1 1 9.8 3.5a7 7 0 0 0 10.7 10.7z"></path></svg>';
+  function applyThemeIcon(){
+    var btn = document.getElementById('themeToggleBtn');
+    if(!btn) return;
+    var isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    btn.innerHTML = isLight ? _svgSun : _svgMoon;
+  }
+  window.toggleTheme = function(){
+    var cur = document.documentElement.getAttribute('data-theme') === 'light' ? 'light' : 'dark';
+    var next = cur === 'light' ? 'dark' : 'light';
+    document.documentElement.setAttribute('data-theme', next);
+    try { localStorage.setItem('tx_theme', next); } catch(e){}
+    applyThemeIcon();
+    if (_lw && typeof _lwThemeColors === 'function') {
+      var c = _lwThemeColors();
+      _lw.applyOptions({
+        layout: { background: {type:'solid', color:c.bg}, textColor:c.text },
+        grid: { vertLines:{color:c.grid}, horzLines:{color:c.grid} },
+        crosshair: {
+          vertLine:{color:c.cross, labelBackgroundColor:c.label},
+          horzLine:{color:c.cross, labelBackgroundColor:c.label}
+        },
+        rightPriceScale: { borderColor:c.border },
+        timeScale: { borderColor:c.border },
+      });
+    }
+  };
+  applyThemeIcon();
+
   // Nav + panelleri sadece mobilde göster
   function mShow(){
     if(window.innerWidth > 768){ mHideAll(); }
@@ -8252,11 +8356,26 @@ function symUnpin(sym){
     var chgUp=chgVal>=0;
     var chgHtml='<span class="mw-chg '+(chgUp?'mw-chg-u':'mw-chg-d')+'" id="mmwc-'+it2.sym+'">'+(chgUp?'▲':'▼')+' '+chgAbs+'%</span>';
     var rowCls=(typeof curSym!=='undefined'&&it2.sym===curSym)?'mw-row active-sym':'mw-row';
-    var ico=(it2.icon&&it2.icon.trim()&&it2.icon.trim().length<=2)?it2.icon.trim():'';
+    var ico=(it2.icon&&it2.icon.trim()&&Array.from(it2.icon.trim()).length<=2)?it2.icon.trim():'';
     var dotColor=it2.color||'#f0b90b';
     var _favOnclick="event.stopPropagation(); txToggleFavorite('"+it2.sym+"')";
-    var icoHtml=ico?'<div class="mw-icon" onclick="'+_favOnclick+'">'+ico+'</div>'
-      :'<div class="mw-icon" onclick="'+_favOnclick+'" style="display:flex;align-items:center;justify-content:center;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+dotColor+';"></span></div>';
+    var icoHtml;
+    if (gid === 'bist') {
+      var _logoUrl = 'https://cdn.jsdelivr.net/gh/ahmeterenodaci/Istanbul-Stock-Exchange--BIST--including-symbols-and-logos/logos/' + it2.sym + '.png';
+      icoHtml = '<div class="mw-icon" onclick="'+_favOnclick+'" style="display:flex;align-items:center;justify-content:center;">'
+        + '<img src="'+_logoUrl+'" alt="" loading="lazy" style="width:20px;height:20px;border-radius:50%;object-fit:contain;background:#fff;border:1px solid var(--border);flex-shrink:0" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'inline-block\';">'
+        + '<span style="display:none;width:10px;height:10px;border-radius:50%;background:'+dotColor+';"></span>'
+        + '</div>';
+    } else if (gid === 'stocks') {
+      var _logoUrl2 = 'https://financialmodelingprep.com/image-stock/' + it2.sym + '.png';
+      icoHtml = '<div class="mw-icon" onclick="'+_favOnclick+'" style="display:flex;align-items:center;justify-content:center;">'
+        + '<img src="'+_logoUrl2+'" alt="" loading="lazy" style="width:20px;height:20px;border-radius:50%;object-fit:contain;background:#fff;border:1px solid var(--border);flex-shrink:0" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'inline-block\';">'
+        + '<span style="display:none;width:10px;height:10px;border-radius:50%;background:'+dotColor+';"></span>'
+        + '</div>';
+    } else {
+      icoHtml=ico?'<div class="mw-icon" onclick="'+_favOnclick+'">'+ico+'</div>'
+        :'<div class="mw-icon" onclick="'+_favOnclick+'" style="display:flex;align-items:center;justify-content:center;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+dotColor+';"></span></div>';
+    }
     return '<div id="mmwr-'+it2.sym+'" class="'+rowCls+'" data-sym="'+it2.sym+'" data-gid="'+gid+'">'
       +icoHtml
       +'<div class="mw-sym-block"><div class="mw-sym-name">'+it2.name+' '+chgHtml+'</div><div class="mw-sym-full">'+it2.full+'</div></div>'
@@ -8762,7 +8881,7 @@ function symUnpin(sym){
       set('mSMar',fp2(st.margin||0));
       set('mSFr',fp2(st.freeMargin));
       set('mSML',st.marginLvl?'%'+st.marginLvl.toFixed(1):'—');
-      setc('mSML',!st.marginLvl?'#333':st.marginLvl>200?'#2979ff':st.marginLvl>100?'#f5c518':'#ef5350');
+      setc('mSML',!st.marginLvl?'var(--border2)':st.marginLvl>200?'#2979ff':st.marginLvl>100?'#f5c518':'#ef5350');
       var pnl=st.openPnl;
       set('mSPnl',(pnl>=0?'+':'')+fp2(pnl));
       setc('mSPnl',pnl>=0?'#2979ff':'#ef5350');
@@ -8774,7 +8893,7 @@ function symUnpin(sym){
       var pnl2=st.openPnl; set('mPSPnl',(pnl2>=0?'+':'')+fp2(pnl2)); setc('mPSPnl',pnl2>=0?'#2979ff':'#ef5350');
       set('mPSFr',fp2(st.freeMargin));
       set('mPSML',st.marginLvl?'%'+st.marginLvl.toFixed(1):'—');
-      setc('mPSML',!st.marginLvl?'#333':st.marginLvl>200?'#2979ff':st.marginLvl>100?'#f5c518':'#ef5350');
+      setc('mPSML',!st.marginLvl?'var(--border2)':st.marginLvl>200?'#2979ff':st.marginLvl>100?'#f5c518':'#ef5350');
       set('mPSMar',fp2(st.margin||0));
       set('mPSBon',fp2(bon));
       var posBonRow=document.getElementById('mPosBonusRow');
@@ -8989,53 +9108,53 @@ function symUnpin(sym){
 
 <!-- MOBİL POZİSYON DETAY MODAL -->
 <div id="mPosModal" style="display:none;position:fixed;inset:0;z-index:9800;background:rgba(0,0,0,.7);align-items:flex-end;justify-content:center" onclick="if(event.target===this)mPosModalClose()">
-  <div style="width:100%;background:#181818;border-radius:12px 12px 0 0;border-top:1px solid #222;max-height:65vh;display:flex;flex-direction:column;margin-bottom:62px">
+  <div style="width:100%;background:var(--panel2);border-radius:12px 12px 0 0;border-top:1px solid var(--panel2);max-height:65vh;display:flex;flex-direction:column;margin-bottom:62px">
     <!-- Header kompakt -->
-    <div style="display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid #1a1a1a;flex-shrink:0">
+    <div style="display:flex;align-items:center;padding:10px 14px;border-bottom:1px solid var(--panel);flex-shrink:0">
       <div style="flex:1">
-        <div style="font-family:monospace;font-size:12px;font-weight:700;color:#e0e0e0" id="mPMSym">—</div>
-        <div style="font-family:monospace;font-size:9px;color:#c0c0c0;margin-top:1px" id="mPMType">—</div>
+        <div style="font-family:monospace;font-size:12px;font-weight:700;color:var(--text)" id="mPMSym">—</div>
+        <div style="font-family:monospace;font-size:9px;color:var(--text);margin-top:1px" id="mPMType">—</div>
       </div>
       <div style="text-align:right;margin-right:12px">
         <div style="font-family:monospace;font-size:16px;font-weight:700" id="mPMPnl">—</div>
-        <div style="font-family:monospace;font-size:9px;color:#aaaaaa" id="mPMCur">—</div>
+        <div style="font-family:monospace;font-size:9px;color:var(--muted)" id="mPMCur">—</div>
       </div>
-      <button onclick="mPosModalClose()" style="background:#181818;border:none;color:#c0c0c0;font-size:14px;cursor:pointer;padding:4px 8px;border-radius:4px;touch-action:manipulation">✕</button>
+      <button onclick="mPosModalClose()" style="background:var(--panel2);border:none;color:var(--text);font-size:14px;cursor:pointer;padding:4px 8px;border-radius:4px;touch-action:manipulation">✕</button>
     </div>
     <!-- Detaylar kompakt -->
     <div style="overflow-y:auto;-webkit-overflow-scrolling:touch;flex:1">
-      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:#181818;margin:8px;border-radius:6px;overflow:hidden">
-        <div style="background:#0f0f0f;padding:7px 10px">
-          <div style="font-family:monospace;font-size:8px;color:#b0b0b0;margin-bottom:2px">Açılış</div>
-          <div style="font-family:monospace;font-size:11px;font-weight:700;color:#ccc" id="mPMOpen">—</div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--panel2);margin:8px;border-radius:6px;overflow:hidden">
+        <div style="background:var(--bg);padding:7px 10px">
+          <div style="font-family:monospace;font-size:8px;color:var(--muted);margin-bottom:2px">Açılış</div>
+          <div style="font-family:monospace;font-size:11px;font-weight:700;color:var(--text)" id="mPMOpen">—</div>
         </div>
-        <div style="background:#0f0f0f;padding:7px 10px">
-          <div style="font-family:monospace;font-size:8px;color:#b0b0b0;margin-bottom:2px" id="mPMCurLabel">Mevcut</div>
-          <div style="font-family:monospace;font-size:11px;font-weight:700;color:#ccc" id="mPMCurPrice">—</div>
+        <div style="background:var(--bg);padding:7px 10px">
+          <div style="font-family:monospace;font-size:8px;color:var(--muted);margin-bottom:2px" id="mPMCurLabel">Mevcut</div>
+          <div style="font-family:monospace;font-size:11px;font-weight:700;color:var(--text)" id="mPMCurPrice">—</div>
         </div>
-        <div style="background:#0f0f0f;padding:7px 10px">
-          <div style="font-family:monospace;font-size:8px;color:#b0b0b0;margin-bottom:2px">Lot</div>
-          <div style="font-family:monospace;font-size:11px;font-weight:700;color:#ccc" id="mPMLot">—</div>
+        <div style="background:var(--bg);padding:7px 10px">
+          <div style="font-family:monospace;font-size:8px;color:var(--muted);margin-bottom:2px">Lot</div>
+          <div style="font-family:monospace;font-size:11px;font-weight:700;color:var(--text)" id="mPMLot">—</div>
         </div>
-        <div style="background:#0f0f0f;padding:7px 10px">
-          <div style="font-family:monospace;font-size:8px;color:#b0b0b0;margin-bottom:2px">Swap</div>
-          <div style="font-family:monospace;font-size:11px;font-weight:700;color:#ccc" id="mPMSwap">—</div>
+        <div style="background:var(--bg);padding:7px 10px">
+          <div style="font-family:monospace;font-size:8px;color:var(--muted);margin-bottom:2px">Swap</div>
+          <div style="font-family:monospace;font-size:11px;font-weight:700;color:var(--text)" id="mPMSwap">—</div>
         </div>
-        <div style="background:#0f0f0f;padding:7px 10px">
+        <div style="background:var(--bg);padding:7px 10px">
           <div style="font-family:monospace;font-size:8px;color:#ef5350;margin-bottom:2px">Stop Loss</div>
           <div style="font-family:monospace;font-size:11px;font-weight:700;color:#ef5350" id="mPMSL">—</div>
         </div>
-        <div style="background:#0f0f0f;padding:7px 10px">
+        <div style="background:var(--bg);padding:7px 10px">
           <div style="font-family:monospace;font-size:8px;color:#2979ff;margin-bottom:2px">Take Profit</div>
           <div style="font-family:monospace;font-size:11px;font-weight:700;color:#2979ff" id="mPMTP">—</div>
         </div>
-        <div style="background:#0f0f0f;padding:7px 10px">
-          <div style="font-family:monospace;font-size:8px;color:#b0b0b0;margin-bottom:2px">Teminat</div>
-          <div style="font-family:monospace;font-size:11px;font-weight:700;color:#ccc" id="mPMCost">—</div>
+        <div style="background:var(--bg);padding:7px 10px">
+          <div style="font-family:monospace;font-size:8px;color:var(--muted);margin-bottom:2px">Teminat</div>
+          <div style="font-family:monospace;font-size:11px;font-weight:700;color:var(--text)" id="mPMCost">—</div>
         </div>
-        <div style="background:#0f0f0f;padding:7px 10px">
-          <div style="font-family:monospace;font-size:8px;color:#b0b0b0;margin-bottom:2px">Saat</div>
-          <div style="font-family:monospace;font-size:9px;font-weight:700;color:#ccc" id="mPMTime">—</div>
+        <div style="background:var(--bg);padding:7px 10px">
+          <div style="font-family:monospace;font-size:8px;color:var(--muted);margin-bottom:2px">Saat</div>
+          <div style="font-family:monospace;font-size:9px;font-weight:700;color:var(--text)" id="mPMTime">—</div>
         </div>
       </div>
       <!-- SL/TP Güncelle kompakt -->
@@ -9043,12 +9162,12 @@ function symUnpin(sym){
         <div>
           <div style="font-family:monospace;font-size:8px;color:#ef5350;margin-bottom:3px">SL</div>
           <input id="mPMSLInput" type="number" placeholder="—" step="any" inputmode="decimal"
-            style="width:100%;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:5px;color:#ef5350;font-family:monospace;font-size:12px;padding:7px 8px;outline:none;box-sizing:border-box">
+            style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:#ef5350;font-family:monospace;font-size:12px;padding:7px 8px;outline:none;box-sizing:border-box">
         </div>
         <div>
           <div style="font-family:monospace;font-size:8px;color:#2979ff;margin-bottom:3px">TP</div>
           <input id="mPMTPInput" type="number" placeholder="—" step="any" inputmode="decimal"
-            style="width:100%;background:#0f0f0f;border:1px solid #2a2a2a;border-radius:5px;color:#2979ff;font-family:monospace;font-size:12px;padding:7px 8px;outline:none;box-sizing:border-box">
+            style="width:100%;background:var(--bg);border:1px solid var(--border);border-radius:5px;color:#2979ff;font-family:monospace;font-size:12px;padding:7px 8px;outline:none;box-sizing:border-box">
         </div>
         <button onclick="mPosUpdate()" style="padding:8px 4px;background:#1a1400;border:1px solid #f0b90b;border-radius:5px;color:#f0b90b;font-family:monospace;font-size:11px;font-weight:700;cursor:pointer;touch-action:manipulation;white-space:nowrap">
           ✓ Güncelle
@@ -9056,10 +9175,10 @@ function symUnpin(sym){
       </div>
     </div>
     <!-- Kapat butonu kompakt -->
-    <div style="padding:8px;flex-shrink:0;border-top:1px solid #1a1a1a">
+    <div style="padding:8px;flex-shrink:0;border-top:1px solid var(--panel)">
       <div id="mPMPartialRow" style="display:flex;gap:6px;margin-bottom:6px">
         <input id="mPMPartialQty" type="number" inputmode="decimal" step="0.01" min="0" placeholder="Lot (örn 0.03)"
-          style="flex:1;padding:10px;background:#0d0d0d;border:1px solid #2a2a2a;border-radius:8px;color:#e8e8e8;font-family:monospace;font-size:13px">
+          style="flex:1;padding:10px;background:#0d0d0d;border:1px solid var(--border);border-radius:8px;color:#e8e8e8;font-family:monospace;font-size:13px">
         <button onclick="mPosPartial()"
           style="padding:10px 14px;background:rgba(240,185,11,.1);border:1px solid rgba(240,185,11,.35);border-radius:8px;color:#f0b90b;font-family:monospace;font-size:12px;font-weight:700;cursor:pointer;touch-action:manipulation;white-space:nowrap">
           ◐ Parçalı Kapat
