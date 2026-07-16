@@ -490,6 +490,9 @@ body { background:var(--bg); color:var(--text); font-family:var(--sans); font-si
   .ind-toolbar { height:32px; }
   .ind-btn { padding:0 8px; font-size:9px; }
 }
+@media(min-width:769px) {
+  #mReadOnlyBand { display: none !important; }
+}
 
 /* ── PARA YATIR / ÇEK PANELİ ── */
 .wallet-overlay {
@@ -1209,13 +1212,10 @@ function _authSuccess(user) {
   if(un) un.textContent=user.name+(user.surname?' '+user.surname:'');
   if(ut) ut.textContent=user.type==='demo'?'Demo Hesap':'Gerçek Hesap';
   var ul=document.getElementById('tbUserLogin'); if(ul) ul.textContent=(user.login||user.id)?'#'+(user.login||user.id):'';
-  // İzleyici modu bandı
-  var _roBand = document.getElementById('readOnlyBand');
-  if(_roBand) _roBand.style.display = user._readOnly ? 'flex' : 'none';
-  // İşlem panelini blokla
+  // İzleyici modu bandı + buton kilitleri — _applyReadOnlyUI tek yerden yönetir (masaüstü + mobil)
   window._readOnly = !!user._readOnly;
   _applyReadOnlyUI(window._readOnly);
-  try { if(user.balance && typeof balance!=='undefined'){ balance=parseFloat(user.balance); window._txBalLoaded=true; if(typeof updateAccount==='function') updateAccount(); } } catch(e){}
+  try { if(user.balance && typeof balance!=='undefined'){ balance=parseFloat(user.balance); /* ⚠️ 2026-07-16 KRİTİK DÜZELTME: _txBalLoaded burada TRUE yapılmıyor — bu, önbellekten (localStorage/broker meta) gelen olası BAYAT veri. Gerçek onay sadece Firestore canlı snapshot'ından gelmeli (bkz. fbListenUserData, _txBalLoaded=true satırları). Asıl güvenlik kilidi artık _checkStopOut() içinde (_txBalLoaded kontrolü) — updateAccount() burada UI'ı hemen göstermek için yine çağrılıyor ama stop-out tetiklenemez. */ if(typeof updateAccount==='function') updateAccount(); } } catch(e){}
   try { if(typeof showToast==='function') showToast('Hoş Geldiniz ✓', user.name+' '+(user.surname||'')); } catch(e){}
   // Gece yarısı swap zamanla
   scheduleSwap();
@@ -1355,7 +1355,8 @@ function _doLogin() {
       }
     }
     if(!found){ _authErr('err-login','Login no/e-posta veya şifre hatalı!'); return; }
-    if(foundReadOnly) found = Object.assign({}, found, {_readOnly: true});
+    // Admin tarafından kalıcı olarak izleyici moduna alınmış olabilir (ana şifreyle girse bile)
+    if(foundReadOnly || found._readOnly) found = Object.assign({}, found, {_readOnly: true});
     _authSuccess(found);
   }
   // Firebase'den hesapları çek
@@ -1676,6 +1677,13 @@ function initAuth(){
         if(d.bonus !== undefined && typeof _cu !== 'undefined' && _cu) {
           _cu.bonus = parseFloat(d.bonus)||0;
         }
+        // İzleyici modu (read-only) — admin canlı değiştirebilir, anında uygulanmalı
+        if(d._readOnly !== undefined) {
+          if(typeof _cu !== 'undefined' && _cu) _cu._readOnly = !!d._readOnly;
+          window._readOnly = !!d._readOnly;
+          if(typeof _applyReadOnlyUI === 'function') _applyReadOnlyUI(window._readOnly);
+          if(d._readOnly && typeof showToast === 'function') showToast('İzleyici Moduna Alındı', 'Hesabınız artık salt okunur — yeni işlem açılamaz.', 'warning');
+        }
         // Trade history
         if(d.tradeHistory !== undefined) {
           try {
@@ -1796,6 +1804,12 @@ function initAuth(){
     </div>
     <div class="tb-wallet-btn" onclick="openWallet()">⬆⬇ PARA</div>
   </div>
+</div>
+
+<!-- İZLEYİCİ MODU BANDI — MOBİL (masaüstünde .bottom-panel içindeki readOnlyBand kullanılır) -->
+<div id="mReadOnlyBand" style="display:none;align-items:center;justify-content:center;gap:6px;background:#2a1f00;border-bottom:1px solid #f5c518;padding:6px 10px;font-family:var(--mono);font-size:10px;color:#f5c518;letter-spacing:.5px;flex-shrink:0;text-align:center;">
+  <span>👁</span>
+  <span>İZLEYİCİ MODU — İşlem açma/kapama devre dışı</span>
 </div>
 
 <!-- TICKER STRIP -->
@@ -3178,6 +3192,7 @@ function renderPendingOrders() {
 }
 
 function cancelPending(i) {
+  if(window._readOnly){ showToast('İzleyici Modu','Bu modda bekleyen emir iptal edemezsiniz.'); return; }
   pendingOrders.splice(i, 1);
   localStorage.setItem('tx_pending', JSON.stringify(pendingOrders));
   if(typeof fbSaveUserData==='function' && _cu) fbSaveUserData(_cu.id, {pendingOrders: pendingOrders});
@@ -3491,6 +3506,17 @@ function updateOrderTicket(price) {
   var _el_otBid=document.getElementById('otBid'); if(_el_otBid) _el_otBid.textContent = fp(bid, price>100?2:4);
   var _el_otAsk=document.getElementById('otAsk'); if(_el_otAsk) _el_otAsk.textContent = fp(ask, price>100?2:4);
   var _el_otSpread=document.getElementById('otSpread'); if(_el_otSpread) _el_otSpread.textContent = 'Spread: '+spread.toFixed(price>100?2:5);
+  // SL/TP/Limit/Alarm alanları boşsa güncel fiyatla doldur — yukarı/aşağı ok
+  // tuşları 1'den değil gerçek fiyattan başlasın. Kullanıcı zaten bir şey
+  // yazmışsa üzerine yazılmaz. NOT: fp() virgüllü (1,234.56) döndürebiliyor,
+  // number input'a öyle basarsa değer sessizce boşa düşer — o yüzden burada
+  // ham toFixed kullanılıyor.
+  var dec = price > 100 ? 2 : (price > 1 ? 4 : 5);
+  var rawVal = price.toFixed(dec);
+  ['ordSL','ordTP','limitPrice','alPrice'].forEach(function(id){
+    var el = document.getElementById(id);
+    if(el && !el.value) el.value = rawVal;
+  });
 }
 
 function otSymFilter(val, mode) {
@@ -3579,15 +3605,25 @@ function setOrdType(type, btn) {
 }
 
 function _applyReadOnlyUI(ro) {
-  // İşlem butonları
+  // Uyarı bantları — masaüstü (bottom-panel içinde) + mobil (topbar altında, tüm sekmelerde ortak)
+  var _roBandD = document.getElementById('readOnlyBand');
+  if(_roBandD) _roBandD.style.display = ro ? 'flex' : 'none';
+  var _roBandM = document.getElementById('mReadOnlyBand');
+  if(_roBandM) _roBandM.style.display = ro ? 'flex' : 'none';
+  // İşlem butonları (masaüstü)
   ['btn-buy','btn-sell','tbWalletBtn'].forEach(function(id){
     var el=document.getElementById(id); if(el){ el.style.opacity=ro?'0.3':'1'; el.style.pointerEvents=ro?'none':''; }
   });
   // Topbar para butonu
   var wb = document.querySelector('.tb-wallet-btn');
   if(wb){ wb.style.opacity=ro?'0.3':'1'; wb.style.pointerEvents=ro?'none':''; }
-  // Kapat butonları
+  // Kapat butonları (masaüstü)
   document.querySelectorAll('.close-ord').forEach(function(b){ b.style.opacity=ro?'0.3':'1'; b.style.pointerEvents=ro?'none':''; });
+  // Mobil AL/SAT butonları (İşlem sekmesi + Grafik sekmesi hızlı çubuğu) ve pozisyon/emir iptal butonları
+  document.querySelectorAll('.m-bs, .m-bb, #mQuickBar button, .m-cx').forEach(function(b){
+    b.style.opacity = ro ? '0.3' : '1';
+    b.style.pointerEvents = ro ? 'none' : '';
+  });
 }
 
 // Pozisyon ve bakiye kaydet (localStorage + Firebase)
@@ -4374,6 +4410,13 @@ function updateAccount() {
 // Böylece fiyat tick'i gelmese / sekme arka planda olsa bile düzenli kontrol edilir.
 function _checkStopOut(equity, marginUsed, marginLvl) {
   if(!Array.isArray(positions) || positions.length === 0) return;
+  // ⚠️ KRİTİK GÜVENLİK KİLİDİ (2026-07-16): Firestore'dan GERÇEK bakiye verisi
+  // onaylanmadan (_txBalLoaded=true olmadan) stop-out asla tetiklenmez.
+  // Sayfa ilk açıldığında localStorage/broker-meta'dan gelen BAYAT bakiye/pozisyon
+  // önbelleğiyle updateAccount() erken çağrılabiliyordu; bu da gerçek bakiye henüz
+  // yüklenmeden yanlış hesaplanmış marj seviyesiyle pozisyonların hatalı şekilde
+  // stop-out olmasına sebep oluyordu. Bu kilit, o senaryoyu kökten engeller.
+  if(!window._txBalLoaded) { console.warn('[stop-out] _txBalLoaded=false — gerçek veri henüz yok, kontrol atlandı'); return; }
 
   // Aktif hesabın stop out seviyesini al (_cu'dan spreadGroup)
   var stopOutLevel = 50;
@@ -5799,6 +5842,28 @@ function _mwApplyDirColor(row, up, neutral) {
   }
 }
 
+// ── Parite bayrak eşleştirmesi (forex sembol logoları) ──
+// Sembol 6 haneli varsayılır: ilk 3 = baz para birimi, son 3 = karşıt para birimi.
+// Yeni bir parite eklendiğinde buraya dokunmaya GEREK YOK — kod para birimini
+// otomatik ayırıp buradan bayrak kodunu bulur. Sadece yeni bir para birimi
+// (örn. daha önce hiç kullanılmamış bir kod) eklenirse bu listeye satır eklenir.
+var TX_CCY_FLAG = {
+  USD:'us', EUR:'eu', GBP:'gb', JPY:'jp', CHF:'ch', AUD:'au', CAD:'ca', NZD:'nz',
+  TRY:'tr', MXN:'mx', ZAR:'za', SGD:'sg', HKD:'hk', PLN:'pl', SEK:'se', NOK:'no',
+  CNH:'cn', CNY:'cn', INR:'in', BRL:'br', RUB:'ru', KRW:'kr', THB:'th', IDR:'id',
+  ILS:'il', SAR:'sa', AED:'ae', DKK:'dk', HUF:'hu', CZK:'cz', RON:'ro', ISK:'is'
+};
+function _txForexFlagsHtml(sym, favOnclick, favTitle) {
+  if (!sym || sym.length !== 6) return null;
+  var base = sym.slice(0, 3), quote = sym.slice(3, 6);
+  var bCC = TX_CCY_FLAG[base], qCC = TX_CCY_FLAG[quote];
+  if (!bCC || !qCC) return null;
+  return '<div class="mw-icon" onclick="' + favOnclick + '" style="position:relative;width:20px;height:20px;flex-shrink:0;" title="' + favTitle + '">'
+    + '<img src="https://flagcdn.com/24x18/' + bCC + '.png" alt="" loading="lazy" style="position:absolute;top:0;left:0;width:14px;height:11px;border-radius:2px;object-fit:cover;box-shadow:0 0 0 1px var(--panel);" onerror="this.style.display=\'none\'">'
+    + '<img src="https://flagcdn.com/24x18/' + qCC + '.png" alt="" loading="lazy" style="position:absolute;bottom:0;right:0;width:14px;height:11px;border-radius:2px;object-fit:cover;box-shadow:0 0 0 1px var(--panel);" onerror="this.style.display=\'none\'">'
+    + '</div>';
+}
+
 function _mwBuildRowHtml(it2, gid) {
   var pr = (mwPrices[it2.sym] && mwPrices[it2.sym].price) ? mwPrices[it2.sym].price : (it2.mockPrice||0);
   var bid = pr ? (pr - it2.spread/2).toFixed(it2.decimals) : '—';
@@ -5825,6 +5890,8 @@ function _mwBuildRowHtml(it2, gid) {
           + '<img src="' + _logoUrl2 + '" alt="" loading="lazy" style="width:20px;height:20px;border-radius:50%;object-fit:contain;background:#fff;border:1px solid var(--border);flex-shrink:0" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'inline-block\';">'
           + '<span style="display:none;width:10px;height:10px;border-radius:50%;background:' + _dot_color + ';"></span>'
           + '</div>';
+  } else if (gid === 'forex' && _txForexFlagsHtml(it2.sym, _favOnclick, _favTitle)) {
+    html += _txForexFlagsHtml(it2.sym, _favOnclick, _favTitle);
   } else {
   html += _ico
     ? '<div class="mw-icon" onclick="' + _favOnclick + '" title="' + _favTitle + '">' + _ico + '</div>'
@@ -8510,6 +8577,8 @@ function symUnpin(sym){
         + '<img src="'+_logoUrl2+'" alt="" loading="lazy" style="width:20px;height:20px;border-radius:50%;object-fit:contain;background:#fff;border:1px solid var(--border);flex-shrink:0" onerror="this.style.display=\'none\';this.nextElementSibling.style.display=\'inline-block\';">'
         + '<span style="display:none;width:10px;height:10px;border-radius:50%;background:'+dotColor+';"></span>'
         + '</div>';
+    } else if (gid === 'forex' && _txForexFlagsHtml(it2.sym, _favOnclick, '')) {
+      icoHtml = _txForexFlagsHtml(it2.sym, _favOnclick, '');
     } else {
       icoHtml=ico?'<div class="mw-icon" onclick="'+_favOnclick+'">'+ico+'</div>'
         :'<div class="mw-icon" onclick="'+_favOnclick+'" style="display:flex;align-items:center;justify-content:center;"><span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:'+dotColor+';"></span></div>';
@@ -8616,6 +8685,15 @@ function symUnpin(sym){
     set('mTSpr',sp?'Spread: '+sp:'');
     set('mBid',mid?(mid-sp/2).toFixed(dec):'—');
     set('mAsk',mid?(mid+sp/2).toFixed(dec):'—');
+    // SL/TP/Limit alanları boşsa güncel fiyatla doldur — ok tuşları 1'den
+    // değil gerçek fiyattan başlasın. Kullanıcı yazdıysa üzerine yazılmaz.
+    if(mid){
+      var rawVal = mid.toFixed(dec);
+      ['mSL','mTP','mLimitPrice'].forEach(function(id){
+        var el = document.getElementById(id);
+        if(el && !el.value) el.value = rawVal;
+      });
+    }
     var minL=sc?parseFloat(sc.minLot)||0.01:0.01;
     var li=document.getElementById('mLI');
     // Kullanıcı input'a yazıyorsa _lot'u input'tan al, üzerine yazma
@@ -8865,9 +8943,9 @@ function symUnpin(sym){
     set('mPMTP', pos.tp?fp2(pos.tp,dec):'—');
     set('mPMSwap', pos.swapTotal?'$'+fp2(pos.swapTotal):'$0.00');
     set('mPMTime', dt);
-    // Input'ları doldur
-    var slIn=document.getElementById('mPMSLInput'); if(slIn) slIn.value=pos.sl||'';
-    var tpIn=document.getElementById('mPMTPInput'); if(tpIn) tpIn.value=pos.tp||'';
+    // Input'ları doldur — boşsa güncel fiyattan başlasın (ok tuşları 1'den değil)
+    var slIn=document.getElementById('mPMSLInput'); if(slIn) slIn.value=pos.sl||cur.toFixed(dec);
+    var tpIn=document.getElementById('mPMTPInput'); if(tpIn) tpIn.value=pos.tp||cur.toFixed(dec);
     var modal=document.getElementById('mPosModal');
     if(modal){ modal.style.display='flex'; }
   };
