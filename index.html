@@ -1602,11 +1602,34 @@ function initAuth(){
   if(!_cu || !_cu.name) {
     var el = document.getElementById('authOverlay');
     if(el) el.style.display = 'flex';
+    return;
   }
-  if(_cu && _cu.name) {
-    // ⚠️ Auto-login: _authSuccess çağır — Firebase Auth + listeners kurulur
+  if(typeof db !== 'undefined' && db && _cu.id) {
+    db.collection('users').doc(String(_cu.id)).get().then(function(userDoc){
+      if(!userDoc.exists) {
+        console.warn('[initAuth] Hesap #'+_cu.id+' artık mevcut değil (silinmiş) — oturum temizleniyor.');
+        _txClearDeletedSession();
+        return;
+      }
+      _authSuccess(_cu);
+    }).catch(function(e){
+      console.warn('[initAuth] Hesap doğrulaması başarısız, önbellekle devam ediliyor:', e.message);
+      _authSuccess(_cu);
+    });
+  } else {
     _authSuccess(_cu);
   }
+}
+function _txClearDeletedSession() {
+  try {
+    localStorage.removeItem('tx_current_user');
+    localStorage.removeItem('tx_pos');
+    localStorage.removeItem('tx_hist');
+    localStorage.removeItem('tx_pending');
+    localStorage.removeItem('tx_al');
+    localStorage.removeItem('tx_accounts');
+  } catch(e){}
+  location.reload();
 }
 </script>
   <!-- Firebase SDK -->
@@ -1779,7 +1802,11 @@ function initAuth(){
       if(!db || !userId) return;
       if(typeof _FB === 'undefined') return;
       _FB.sub('user', db.collection('users').doc(String(userId)).onSnapshot(function(doc) {
-        if(!doc.exists) return;
+        if(!doc.exists) {
+          console.warn('[fbListenUserData] Hesap #'+userId+' silindi (belge artık yok) — oturum kapatılıyor.');
+          if(typeof _txClearDeletedSession === 'function') _txClearDeletedSession();
+          return;
+        }
         var d = doc.data(); if(!d) return;
 
         // SpreadGroup değişimi
